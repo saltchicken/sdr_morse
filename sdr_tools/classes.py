@@ -3,26 +3,20 @@ import numpy as np
 import SoapySDR
 from SoapySDR import *
 
-class Streamer:
-    def __init__(self, sample_rate, center_freq, mode):
+class UHD_TX_Streamer:
+    def __init__(self, sample_rate, center_freq):
         self.sample_rate = sample_rate
         self.center_freq = center_freq
         self.mode = mode
         self.usrp = uhd.usrp.MultiUSRP()
         self.stream_args = uhd.usrp.StreamArgs("fc32", "sc16")
-        if self.mode == 'tx':
-            self.usrp.set_tx_rate(self.sample_rate)
-            self.usrp.set_tx_freq(self.center_freq)
-            self.streamer = self.usrp.get_tx_stream(self.stream_args)
-            self.metadata = uhd.types.TXMetadata()
-            # INIT_DELAY = 0.05
-            # self.metadata.time_spec = uhd.types.TimeSpec(self.usrp.get_time_now().get_real_secs() + INIT_DELAY)
-            # self.metadata.has_time_spec = bool(self.streamer.get_num_channels())
-        elif mode == 'rx':
-            self.usrp.set_rx_rate(self.sample_rate)
-            self.usrp.set_rx_freq(self.center_freq)
-            self.streamer = self.usrp.get_rx_stream(self.stream_args)
-            self.metadata = uhd.types.RXMetadata()
+        self.usrp.set_tx_rate(self.sample_rate)
+        self.usrp.set_tx_freq(self.center_freq)
+        self.streamer = self.usrp.get_tx_stream(self.stream_args)
+        self.metadata = uhd.types.TXMetadata()
+        INIT_DELAY = 0.05
+        self.metadata.time_spec = uhd.types.TimeSpec(self.usrp.get_time_now().get_real_secs() + INIT_DELAY)
+        self.metadata.has_time_spec = bool(self.streamer.get_num_channels())
     
     def send(self, message):
         self.streamer.send(message, self.metadata)

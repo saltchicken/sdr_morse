@@ -4,8 +4,7 @@ from sdr_tools import utils
 def setup():
     sample_rate = 1e6
     center_freq = 434e6
-    mode = 'tx'
-    streamer = classes.Streamer(sample_rate, center_freq, mode)
+    streamer = classes.UHD_TX_Streamer(sample_rate, center_freq)
     return sample_rate, center_freq, streamer
 
 if __name__ == "__main__":
