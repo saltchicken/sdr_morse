@@ -7,7 +7,6 @@ class UHD_TX_Streamer:
     def __init__(self, sample_rate, center_freq):
         self.sample_rate = sample_rate
         self.center_freq = center_freq
-        self.mode = mode
         self.usrp = uhd.usrp.MultiUSRP()
         self.stream_args = uhd.usrp.StreamArgs("fc32", "sc16")
         self.usrp.set_tx_rate(self.sample_rate)
