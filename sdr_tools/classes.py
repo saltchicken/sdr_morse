@@ -13,9 +13,9 @@ class UHD_TX_Streamer:
         self.usrp.set_tx_freq(self.center_freq)
         self.streamer = self.usrp.get_tx_stream(self.stream_args)
         self.metadata = uhd.types.TXMetadata()
-        INIT_DELAY = 0.05
-        self.metadata.time_spec = uhd.types.TimeSpec(self.usrp.get_time_now().get_real_secs() + INIT_DELAY)
-        self.metadata.has_time_spec = bool(self.streamer.get_num_channels())
+        # INIT_DELAY = 0.05
+        # self.metadata.time_spec = uhd.types.TimeSpec(self.usrp.get_time_now().get_real_secs() + INIT_DELAY)
+        # self.metadata.has_time_spec = bool(self.streamer.get_num_channels())
     
     def send(self, message):
         self.streamer.send(message, self.metadata)
