@@ -59,9 +59,10 @@ def generate_fm_packet_complex(binary_string, frequency, second_frequency, durat
     transmission_signal = np.zeros(len(t), dtype=np.complex64)
     time_interval = 1 / sample_rate
     
+    # TODO: Make more efficient. Calc phase shift right after symbol wave. Use 'np.exp()'
     for i, bit in enumerate(binary_string):
         start_index = symbol_length * i
-        end_index = symbol_length * i + symbol_length
+        end_index = start_index + symbol_length
         symbol_time = symbol_length * time_interval
         if i == 0:
             phase_shift = 0.0

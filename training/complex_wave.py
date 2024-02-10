@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+# plt.style.use('dark_background')
+
 # Parameters
 frequency = 1.0  # Frequency of the cosine wave
 amplitude = 1.0  # Amplitude of the cosine wave
@@ -30,11 +32,11 @@ print(complex_wave_original.dtype)
 
 
 # Plot the real and imaginary parts
-ax1.plot(t, complex_wave.real, label='Real')
-ax1.plot(t, complex_wave.imag, label='Imaginary')
+ax1.plot(t, complex_wave.real, label='Real', color='blue')
+ax1.plot(t, complex_wave.imag, label='Imaginary', color='red')
 # plt.plot(t, complex_wave)
-ax2.plot(t, complex_wave_original.real, label='Real')
-ax2.plot(t, complex_wave_original.imag, label='Imaginary')
+ax2.plot(t, complex_wave_original.real, label='Real', color='blue')
+ax2.plot(t, complex_wave_original.imag, label='Imaginary', color='red')
 # plt.xlabel('Time (s)')
 # plt.ylabel('Amplitude')
 # plt.title('Complex Cosine Wave')
