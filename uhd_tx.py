@@ -1,14 +1,12 @@
 from sdr_tools import classes
 from sdr_tools import utils
 
-def setup():
+from IPython import embed
+
+if __name__ == "__main__":  
     sample_rate = 1e6
     center_freq = 434e6
     streamer = classes.UHD_TX_Streamer(sample_rate, center_freq)
-    return sample_rate, center_freq, streamer
-
-if __name__ == "__main__":
-    sample_rate, center_freq, streamer = setup()
     
     freq = 40000
     freq_deviation = 10000
@@ -16,4 +14,6 @@ if __name__ == "__main__":
 
     transmission_signal = utils.generate_fm_packet('10100010', freq - freq_deviation, freq + freq_deviation, duration, sample_rate)
 
-    streamer.send(transmission_signal)
+    # streamer.send(transmission_signal)
+    
+    embed()

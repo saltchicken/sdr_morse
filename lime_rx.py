@@ -5,34 +5,28 @@ import numpy as np
 from scipy.signal import resample_poly, firwin, bilinear, lfilter
 import matplotlib.pyplot as plt
 
-# apply settings
-sample_rate = 2e6
-frequency = 433.5e6
-antenna = 'LNAW'
+from IPython import embed
 
-buffer_size = 10000000
+if __name__ == "__main__":
+    # apply settings
+    sample_rate = 2e6
+    frequency = 433.5e6
+    antenna = 'LNAW'
 
-receiver = classes.Receiver(sample_rate, frequency, antenna, buffer_size)
+    buffer_size = 10000000
 
-frequency = -540000  # Adjust the frequency as needed
-wave_gen = utils.cos_wave_generator(sample_rate, frequency, buffer_size)
+    receiver = classes.Receiver(sample_rate, frequency, antenna, buffer_size)
 
-received = receiver.read()
+    frequency = -540000  # Adjust the frequency as needed
+    wave_gen = utils.cos_wave_generator(sample_rate, frequency, buffer_size)
 
-modulated = received * next(wave_gen)
+    received = receiver.read()
 
-# demodulated = 0.5 * np.angle(modulated[0:-1] * np.conj(modulated[1:]))
+    modulated = received * next(wave_gen)
 
-# taps = firwin(numtaps=101, cutoff=150e3, fs=sample_rate)
-# modulated = np.convolve(modulated, taps, 'valid')
+    # output_file = 'samples.bin'
+    # print(modulated.shape)
+    # modulated.tofile(output_file)
+    embed()
 
-# Decimate by 10
-# modulated = modulated[::20]
-# plt.plot(filtered)
-# plt.show()
-
-output_file = 'samples.bin'
-print(modulated.shape)
-modulated.tofile(output_file)
-
-receiver.close()
+    receiver.close()
