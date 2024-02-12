@@ -1,6 +1,7 @@
 import uhd
 import numpy as np
 import SoapySDR
+import time
 from SoapySDR import *
 
 class UHD_TX_Streamer:
@@ -40,15 +41,13 @@ class Receiver:
         sr = self.sdr.readStream(self.rxStream, [self.read_buffer], len(self.read_buffer))
         return self.read_buffer
     
-    def timed_read(self, duration):
+    def timed_read(self, duration, num_samps=2048):
         start_time = time.time()
         received_sample = np.array([])
-        i = 0
         while time.time() - start_time < duration:
-            i += 1
-            samples = self.read()
-            received_sample = np.append(received_sample, samples)
-        print(i)
+            read_buffer = np.array([0] * num_samps, np.complex64)
+            self.sdr.readStream(self.rxStream, [self.read_buffer], len(self.read_buffer))
+            received_sample = np.append(received_sample, read_buffer)
         return received_sample
     
     def close(self):
