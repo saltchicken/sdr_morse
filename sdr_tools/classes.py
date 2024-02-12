@@ -46,7 +46,8 @@ class Receiver:
         received_sample = np.array([])
         while time.time() - start_time < duration:
             read_buffer = np.array([0] * num_samps, np.complex64)
-            self.sdr.readStream(self.rxStream, [self.read_buffer], len(self.read_buffer))
+            
+            self.sdr.readStream(self.rxStream, [read_buffer], len(read_buffer))
             received_sample = np.append(received_sample, read_buffer)
         return received_sample
     
