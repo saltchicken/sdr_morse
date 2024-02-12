@@ -22,11 +22,11 @@ class UHD_TX_Streamer:
         self.streamer.send(message, self.metadata)
         
 class Receiver:
-    def __init__(self, sample_rate, frequency, antenna, read_buffer_size):
+    def __init__(self, sample_rate, frequency, antenna, read_buffer_size=1024):
         self.sample_rate = sample_rate
         self.frequency = frequency
         self.antenna = antenna
-
+        
         self.read_buffer = np.array([0] * read_buffer_size, np.complex64)
 
         args = dict(driver="lime")
@@ -37,19 +37,20 @@ class Receiver:
         self.rxStream = self.sdr.setupStream(SOAPY_SDR_RX, SOAPY_SDR_CF32)
         self.sdr.activateStream(self.rxStream)  # start streaming
     
+    def set_buffer_size(self, buffer_size):
+        self.read_buffer = np.zeros(buffer_size, np.complex64)
+    
     def read(self):
         sr = self.sdr.readStream(self.rxStream, [self.read_buffer], len(self.read_buffer))
         return self.read_buffer
     
-    def timed_read(self, duration, num_samps=2048):
+    def timed_read(self, duration):
         start_time = time.time()
-        received_sample = np.array([])
+        received_sample = []
         while time.time() - start_time < duration:
-            read_buffer = np.array([0] * num_samps, np.complex64)
-            
-            self.sdr.readStream(self.rxStream, [read_buffer], len(read_buffer))
-            received_sample = np.append(received_sample, read_buffer)
-        return received_sample
+            self.sdr.readStream(self.rxStream, [self.read_buffer], len(self.read_buffer))
+            received_sample.append(self.read_buffer)
+        return np.concatenate(received_sample)
     
     def close(self):
         self.sdr.deactivateStream(self.rxStream)  # stop streaming
