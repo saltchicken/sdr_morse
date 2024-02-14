@@ -55,7 +55,7 @@ class Receiver:
     def read_chunk(self, num_samps):
         num_reads = num_samps // len(self.read_buffer)
         received_sample = []
-        for i in num_reads:
+        for i in range(num_reads):
             received_sample.append(self.read())
         return np.concatenate(received_sample)
     
