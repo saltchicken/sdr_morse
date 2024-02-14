@@ -51,6 +51,13 @@ class Receiver:
             self.sdr.readStream(self.rxStream, [self.read_buffer], len(self.read_buffer))
             received_sample.append(self.read_buffer)
         return np.concatenate(received_sample)
+
+    def read_chunk(self, num_samps):
+        num_reads = num_samps // len(self.read_buffer)
+        received_sample = []
+        for i in num_reads:
+            received_sample.append(self.read())
+        return np.concatenate(received_sample)
     
     def close(self):
         self.sdr.deactivateStream(self.rxStream)  # stop streaming
