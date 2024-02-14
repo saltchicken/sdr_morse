@@ -5,6 +5,8 @@ import numpy as np
 from scipy.signal import resample_poly, firwin, bilinear, lfilter
 import matplotlib.pyplot as plt
 
+from IPython import embed
+
 # apply settings
 sample_rate = 2e6
 frequency = 433.5e6
@@ -34,5 +36,7 @@ modulated = received * next(wave_gen)
 output_file = 'samples.bin'
 print(modulated.shape)
 modulated.tofile(output_file)
+
+embed()
 
 receiver.close()
