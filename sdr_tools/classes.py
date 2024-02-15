@@ -48,15 +48,14 @@ class Receiver:
         start_time = time.time()
         received_sample = []
         while time.time() - start_time < duration:
-            self.sdr.readStream(self.rxStream, [self.read_buffer], len(self.read_buffer))
-            received_sample.append(self.read_buffer)
+            received_sample.append(np.copy(self.read()))
         return np.concatenate(received_sample)
 
     def read_chunk(self, num_samps):
         num_reads = num_samps // len(self.read_buffer)
         received_sample = []
         for i in range(num_reads):
-            received_sample.append(self.read())
+            received_sample.append(np.copy(self.read()))
         return np.concatenate(received_sample)
     
     def close(self):
