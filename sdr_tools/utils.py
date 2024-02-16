@@ -74,15 +74,15 @@ def display_sample(receiver, iterations=1000, buffer_size=1024, fft_size=None):
     if fft_size == None:
         fft_size = buffer_size
     samples = []
+    waterfall_data = np.zeros((iterations, fft_size))
     for i in range(iterations):
             sample = np.copy(receiver.read())
             samples.append(sample)
+            freq_domain = np.fft.fftshift(np.fft.fft(sample, n=fft_size))
+            max_magnitude_index = np.abs(freq_domain)
+            waterfall_data[i, :] = max_magnitude_index
     result = np.concatenate(samples)
     
-    freq_domain = np.fft.fftshift(np.fft.fft(samples, axis=1, n=fft_size))
-    max_magnitude_index = np.abs(freq_domain)
-    waterfall_data = max_magnitude_index
-
     freq_range = receiver.sample_rate / 2000 # Half sample_rate and convert to kHz
     sample_time = buffer_size * iterations / receiver.sample_rate
     plt.imshow(waterfall_data, extent=[-freq_range, freq_range, 0, sample_time], aspect='auto')
