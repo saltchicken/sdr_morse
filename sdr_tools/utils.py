@@ -99,7 +99,7 @@ def display_sample_animated(receiver, iterations=1000, buffer_size=1024, fft_siz
     receiver.set_buffer_size(buffer_size)
     if fft_size == None:
         fft_size = buffer_size
-    waterfall_data = np.zeros((iterations, buffer_size))
+    waterfall_data = np.zeros((iterations, fft_size))
     
     fig, ax = plt.subplots()
     im = ax.imshow(waterfall_data, cmap='viridis')
