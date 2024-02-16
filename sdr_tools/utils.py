@@ -95,7 +95,10 @@ def display_sample(receiver, iterations=1000, buffer_size=1024, fft_size=None):
     
     return result 
 
-def display_sample_animated(receiver, iterations=1000, buffer_size=1024):
+def display_sample_animated(receiver, iterations=1000, buffer_size=1024, fft_size=None):
+    receiver.set_buffer_size(buffer_size)
+    if fft_size == None:
+        fft_size = buffer_size
     waterfall_data = np.zeros((iterations, buffer_size))
     
     fig, ax = plt.subplots()
@@ -112,7 +115,7 @@ def display_sample_animated(receiver, iterations=1000, buffer_size=1024):
     def update_image(frame):
         for i in range(iterations):
             sample = np.copy(receiver.read())
-            freq_domain = np.fft.fftshift(np.fft.fft(sample))
+            freq_domain = np.fft.fftshift(np.fft.fft(sample, n=fft_size))
             max_magnitude_index = np.abs(freq_domain)
             waterfall_data[i, :] = max_magnitude_index
         im.set_array(waterfall_data)
