@@ -80,10 +80,13 @@ def display_sample(receiver, iterations=1000, buffer_size=1024):
             max_magnitude_index = np.abs(freq_domain)
             waterfall_data[i, :] = max_magnitude_index
     result = np.concatenate(samples)
-       
-    plt.imshow(waterfall_data, aspect='auto')  # extent=[0, sample_rate / 1e3, 0, num_samples] ---- Also used LogNorm?
+    
+    freq_range = receiver.sample_rate / 2000 # Half sample_rate and convert to kHz
+    sample_time = buffer_size * iterations / receiver.sample_rate
+    plt.imshow(waterfall_data, extent=[-freq_range, freq_range, 0, sample_time], aspect='auto')
+    # plt.imshow(waterfall_data, aspect='auto')  # extent=[0, sample_rate / 1e3, 0, num_samples] ---- Also used LogNorm?
     plt.xlabel('Frequency (kHz)')
-    plt.ylabel('Time')
+    plt.ylabel('Time (s)')
     plt.title('Waterfall Plot')
     plt.colorbar(label='Amplitude')
     plt.show()
@@ -95,10 +98,12 @@ def display_sample_animated(receiver, iterations=1000, buffer_size=1024):
     
     fig, ax = plt.subplots()
     im = ax.imshow(waterfall_data, cmap='viridis')
-        
-    ax.imshow(waterfall_data, aspect='auto')  # extent=[0, sample_rate / 1e3, 0, num_samples] ---- Also used LogNorm?
+    
+    freq_range = receiver.sample_rate / 2000 # Half sample_rate and convert to kHz
+    sample_time = buffer_size * iterations / receiver.sample_rate
+    plt.imshow(waterfall_data, extent=[-freq_range, freq_range, 0, sample_time], aspect='auto')
     ax.set_xlabel('Frequency (kHz)')
-    ax.set_ylabel('Time')
+    ax.set_ylabel('Time (s)')
     ax.set_title('Waterfall Plot')
     fig.colorbar(im, label='Amplitude')
     
