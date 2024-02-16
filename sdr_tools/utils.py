@@ -1,4 +1,8 @@
 import numpy as np
+from scipy import signal
+
+import matplotlib.pyplot as plt
+plt.style.use('dark_background')
 
 def generate_carrier(streamer, frequency, duration):
     t = np.arange(0, duration, 1 / streamer.sample_rate)
@@ -46,3 +50,40 @@ def cos_wave_generator(sample_rate, frequency, samples):
         t = (np.arange(samples) + i * samples) / sample_rate
         yield np.exp(1j * 2 * np.pi * frequency * t).astype(np.complex64)
         i += 1
+
+def peak_freq(sample, sample_rate):
+        freq_domain = np.fft.fftshift(np.fft.fft(sample))
+        frequencies = np.fft.fftshift(np.fft.fftfreq(len(sample), 1/sample_rate))
+        max_magnitude_index = np.argmax(np.abs(freq_domain))
+        center_freq = frequencies[max_magnitude_index]
+        return center_freq
+
+def low_pass_filter(sample, sample_rate, cutoff_frequency, filter_order=5):
+        nyquist_frequency = sample_rate / 2
+        normalized_cutoff_frequency = cutoff_frequency / nyquist_frequency
+        b, a = signal.butter(filter_order, normalized_cutoff_frequency, btype='low')
+        filtered = signal.lfilter(b, a, sample)
+        filtered = filtered.astype(np.complex64)
+        assert sample.dtype == filtered.dtype, "Output of filtered signal mismatched with sample signal"
+        return filtered
+
+def display_sample(receiver, iterations=1000, buffer_size=1024):
+    receiver.set_buffer_size(buffer_size)
+    samples = []
+    waterfall_data = np.zeros((iterations, buffer_size))
+    for i in range(iterations):
+            sample = np.copy(receiver.read())
+            samples.append(sample)
+            freq_domain = np.fft.fftshift(np.fft.fft(sample))
+            max_magnitude_index = np.abs(freq_domain)
+            waterfall_data[i, :] = max_magnitude_index
+    result = np.concatenate(samples)
+       
+    plt.imshow(waterfall_data, aspect='auto')  # extent=[0, sample_rate / 1e3, 0, num_samples] ---- Also used LogNorm?
+    plt.xlabel('Frequency (kHz)')
+    plt.ylabel('Time')
+    plt.title('Waterfall Plot')
+    plt.colorbar(label='Amplitude')
+    plt.show()
+    
+    return result 
