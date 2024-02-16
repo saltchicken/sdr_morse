@@ -114,6 +114,7 @@ def display_sample_animated(receiver, iterations=1000, buffer_size=1024):
             max_magnitude_index = np.abs(freq_domain)
             waterfall_data[i, :] = max_magnitude_index
         im.set_array(waterfall_data)
+        im.set_extent([-freq_range, freq_range, 0, receiver.sample_rate])
         return im,
     
     interval = 0  # milliseconds
