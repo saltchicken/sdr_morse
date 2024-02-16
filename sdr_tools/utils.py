@@ -2,7 +2,9 @@ import numpy as np
 from scipy import signal
 
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 plt.style.use('dark_background')
+
 
 def generate_carrier(streamer, frequency, duration):
     t = np.arange(0, duration, 1 / streamer.sample_rate)
@@ -87,3 +89,30 @@ def display_sample(receiver, iterations=1000, buffer_size=1024):
     plt.show()
     
     return result 
+
+def display_sample_animated(receiver, iterations=1000, buffer_size=1024):
+    waterfall_data = np.zeros((iterations, buffer_size))
+    
+    fig, ax = plt.subplots()
+    im = ax.imshow(waterfall_data, cmap='viridis')
+        
+    ax.imshow(waterfall_data, aspect='auto')  # extent=[0, sample_rate / 1e3, 0, num_samples] ---- Also used LogNorm?
+    ax.set_xlabel('Frequency (kHz)')
+    ax.set_ylabel('Time')
+    ax.set_title('Waterfall Plot')
+    fig.colorbar(im, label='Amplitude')
+    
+    def update_image(frame):
+        for i in range(iterations):
+            sample = np.copy(receiver.read())
+            freq_domain = np.fft.fftshift(np.fft.fft(sample))
+            max_magnitude_index = np.abs(freq_domain)
+            waterfall_data[i, :] = max_magnitude_index
+        im.set_array(waterfall_data)
+        return im,
+    
+    interval = 0  # milliseconds
+    ani = FuncAnimation(fig, update_image, interval=interval, blit=True)
+    plt.show()
+            
+    
