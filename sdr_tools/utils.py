@@ -103,11 +103,11 @@ def display_sample_animated(receiver, iterations=1000, buffer_size=1024, fft_siz
     waterfall_data = np.zeros((iterations, fft_size))
     
     fig, ax = plt.subplots()
+    fig.set_size_inches(12, 10)
     im = ax.imshow(waterfall_data, cmap='viridis')
     
     freq_range = receiver.sample_rate / 2000 # Half sample_rate and convert to kHz
     sample_time = buffer_size * iterations / receiver.sample_rate
-    plt.figure(figsize=(12, 10))
     plt.imshow(waterfall_data, extent=[-freq_range, freq_range, 0, sample_time], aspect='auto')
     ax.set_xlabel('Frequency (kHz)')
     ax.set_ylabel('Time (s)')
