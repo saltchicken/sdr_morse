@@ -78,6 +78,9 @@ def quad_demod(sample):
 def downsample(sample, downsample_rate):
     return sample[::downsample_rate]
 
+def resample(sample, interpolation, decimation):
+    return signal.resample_poly(sample, interpolation, decimation)#interpolation == upsample, decimation == downsample
+
 def display_sample(receiver, iterations=1000, buffer_size=1024, fft_size=None):
     receiver.set_buffer_size(buffer_size)
     if fft_size == None:
