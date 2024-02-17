@@ -68,6 +68,12 @@ def low_pass_filter(sample, sample_rate, cutoff_frequency, filter_order=5):
         filtered = filtered.astype(np.complex64)
         assert sample.dtype == filtered.dtype, "Output of filtered signal mismatched with sample signal"
         return filtered
+    
+def quad_demod(sample):
+    return 0.5 * np.angle(sample[:-1] * np.conj(sample[1:]))
+
+def downsample(sample, downsample_rate):
+    return sample[::downsample_rate]
 
 def display_sample(receiver, iterations=1000, buffer_size=1024, fft_size=None):
     receiver.set_buffer_size(buffer_size)
