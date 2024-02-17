@@ -85,6 +85,7 @@ def display_sample(receiver, iterations=1000, buffer_size=1024, fft_size=None):
     
     freq_range = receiver.sample_rate / 2000 # Half sample_rate and convert to kHz
     sample_time = buffer_size * iterations / receiver.sample_rate
+    plt.figure(figsize=(12, 10))
     plt.imshow(waterfall_data, extent=[-freq_range, freq_range, 0, sample_time], aspect='auto')
     # plt.imshow(waterfall_data, aspect='auto')  # extent=[0, sample_rate / 1e3, 0, num_samples] ---- Also used LogNorm?
     plt.xlabel('Frequency (kHz)')
@@ -106,6 +107,7 @@ def display_sample_animated(receiver, iterations=1000, buffer_size=1024, fft_siz
     
     freq_range = receiver.sample_rate / 2000 # Half sample_rate and convert to kHz
     sample_time = buffer_size * iterations / receiver.sample_rate
+    plt.figure(figsize=(12, 10))
     plt.imshow(waterfall_data, extent=[-freq_range, freq_range, 0, sample_time], aspect='auto')
     ax.set_xlabel('Frequency (kHz)')
     ax.set_ylabel('Time (s)')
