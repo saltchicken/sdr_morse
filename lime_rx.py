@@ -14,7 +14,9 @@ antenna = 'LNAW'
 
 # buffer_size = 10000000
 
-receiver = classes.Receiver(sample_rate, frequency, antenna)
+with classes.Receiver(sample_rate, frequency, antenna) as receiver:
+    embed()
+# receiver = classes.Receiver(sample_rate, frequency, antenna)
 
 # frequency = -540000  # Adjust the frequency as needed
 # wave_gen = utils.cos_wave_generator(sample_rate, frequency, buffer_size)
@@ -33,8 +35,3 @@ receiver = classes.Receiver(sample_rate, frequency, antenna)
 # output_file = 'samples.bin'
 # print(modulated.shape)
 # modulated.tofile(output_file)
-
-embed()
-
-print("Closing receiver")
-receiver.close()

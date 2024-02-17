@@ -28,7 +28,9 @@ class Receiver:
         self.antenna = antenna
         
         self.read_buffer = np.array([0] * read_buffer_size, np.complex64)
-
+        
+    def __enter__(self):
+        print('Entering Receiver')
         args = dict(driver="lime")
         self.sdr = SoapySDR.Device(args)
         self.sdr.setSampleRate(SOAPY_SDR_RX, 0, self.sample_rate)
@@ -36,6 +38,11 @@ class Receiver:
         self.sdr.setAntenna(SoapySDR.SOAPY_SDR_RX, 0, self.antenna)
         self.rxStream = self.sdr.setupStream(SOAPY_SDR_RX, SOAPY_SDR_CF32)
         self.sdr.activateStream(self.rxStream)  # start streaming
+        
+    def __exit__(self):
+        print("Exiting receiver")
+        self.sdr.deactivateStream(self.rxStream)  # stop streaming
+        self.sdr.closeStream(self.rxStream)
     
     def set_buffer_size(self, buffer_size):
         self.read_buffer = np.zeros(buffer_size, np.complex64)
@@ -57,7 +64,3 @@ class Receiver:
         for i in range(num_reads):
             received_sample.append(np.copy(self.read()))
         return np.concatenate(received_sample)
-    
-    def close(self):
-        self.sdr.deactivateStream(self.rxStream)  # stop streaming
-        self.sdr.closeStream(self.rxStream)
