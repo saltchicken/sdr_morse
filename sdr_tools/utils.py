@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 plt.style.use('dark_background')
 
+def plot(data):
+    plt.plot(data)
+    plt.show()
 
 def generate_carrier(streamer, frequency, duration):
     t = np.arange(0, duration, 1 / streamer.sample_rate)
