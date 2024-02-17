@@ -22,7 +22,7 @@ class UHD_TX_Streamer:
         self.streamer.send(message, self.metadata)
         
 class Receiver:
-    def __init__(self, sample_rate, frequency, antenna, freq_correction=0.0, read_buffer_size=1024):
+    def __init__(self, sample_rate, frequency, antenna, freq_correction=0, read_buffer_size=1024):
         self.sample_rate = sample_rate
         self.frequency = frequency
         self.antenna = antenna
@@ -46,6 +46,7 @@ class Receiver:
         print("Exiting receiver")
         self.sdr.deactivateStream(self.rxStream)  # stop streaming
         self.sdr.closeStream(self.rxStream)
+        del self.sdr
     
     def set_buffer_size(self, buffer_size):
         self.read_buffer = np.zeros(buffer_size, np.complex64)
