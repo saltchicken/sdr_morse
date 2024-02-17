@@ -38,6 +38,7 @@ class Receiver:
         self.sdr.setAntenna(SoapySDR.SOAPY_SDR_RX, 0, self.antenna)
         self.rxStream = self.sdr.setupStream(SOAPY_SDR_RX, SOAPY_SDR_CF32)
         self.sdr.activateStream(self.rxStream)  # start streaming
+        return self
         
     def __exit__(self, *args, **kwargs):
         print("Exiting receiver")
