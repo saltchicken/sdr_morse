@@ -75,9 +75,13 @@ def display_sample(receiver, iterations=1000, buffer_size=1024, fft_size=None):
         fft_size = buffer_size
     samples = []
     waterfall_data = np.zeros((iterations, fft_size))
+    frequency = -540000
+    wave_gen = cos_wave_generator(receiver.sample_rate, frequency, buffer_size)
     for i in range(iterations):
             sample = np.copy(receiver.read())
-            samples.append(sample)
+            modulated_sample = sample * next(wave_gen)
+            samples.append(modulated_sample)
+            # samples.append(sample)
             freq_domain = np.fft.fftshift(np.fft.fft(sample, n=fft_size))
             max_magnitude_index = np.abs(freq_domain)
             waterfall_data[i, :] = max_magnitude_index
