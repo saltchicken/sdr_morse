@@ -82,7 +82,8 @@ def display_sample(receiver, iterations=1000, buffer_size=1024, fft_size=None):
             modulated_sample = sample * next(wave_gen)
             samples.append(modulated_sample)
             # samples.append(sample)
-            freq_domain = np.fft.fftshift(np.fft.fft(sample, n=fft_size))
+            freq_domain = np.fft.fftshift(np.fft.fft(modulated_sample, n=fft_size))
+            # freq_domain = np.fft.fftshift(np.fft.fft(sample, n=fft_size))
             max_magnitude_index = np.abs(freq_domain)
             waterfall_data[i, :] = max_magnitude_index
     result = np.concatenate(samples)
