@@ -22,10 +22,11 @@ class UHD_TX_Streamer:
         self.streamer.send(message, self.metadata)
         
 class Receiver:
-    def __init__(self, sample_rate, frequency, antenna, read_buffer_size=1024):
+    def __init__(self, sample_rate, frequency, antenna, freq_correction=0.0, read_buffer_size=1024):
         self.sample_rate = sample_rate
         self.frequency = frequency
         self.antenna = antenna
+        self.freq_correction = freq_correction
         
         self.read_buffer = np.array([0] * read_buffer_size, np.complex64)
         
@@ -36,6 +37,7 @@ class Receiver:
         self.sdr.setSampleRate(SOAPY_SDR_RX, 0, self.sample_rate)
         self.sdr.setFrequency(SOAPY_SDR_RX, 0, self.frequency)
         self.sdr.setAntenna(SoapySDR.SOAPY_SDR_RX, 0, self.antenna)
+        self.sdr.setFrequencyCorrection(SoapySDR.SOAPY_SDR_RX, 0, self.freq_correction)
         self.rxStream = self.sdr.setupStream(SOAPY_SDR_RX, SOAPY_SDR_CF32)
         self.sdr.activateStream(self.rxStream)  # start streaming
         return self
