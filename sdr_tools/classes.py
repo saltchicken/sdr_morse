@@ -39,7 +39,7 @@ class Receiver:
         self.rxStream = self.sdr.setupStream(SOAPY_SDR_RX, SOAPY_SDR_CF32)
         self.sdr.activateStream(self.rxStream)  # start streaming
         
-    def __exit__(self, sample_rate, frequency, antenna):
+    def __exit__(self, *args, **kwargs):
         print("Exiting receiver")
         self.sdr.deactivateStream(self.rxStream)  # stop streaming
         self.sdr.closeStream(self.rxStream)
