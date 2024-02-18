@@ -142,6 +142,10 @@ class Segment:
         plt.colorbar(label='Amplitude')
         plt.show()
         
+    def plot(self):
+        plt.plot(self.data)
+        plt.show()
+        
 class QuadDemodSegment(Segment):
     def __init__(self, sample):
         super().__init__(sample.data, sample.sample_rate)
