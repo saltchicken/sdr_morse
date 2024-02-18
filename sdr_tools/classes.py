@@ -80,4 +80,4 @@ class Sample:
             for i in range(iterations):
                 sample = np.copy(receiver.read())
                 self.samples.append(sample)
-        self.data = np.concatenate(self.samples)
+            self.data = np.concatenate(self.samples)
