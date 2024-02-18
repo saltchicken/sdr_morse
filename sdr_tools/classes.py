@@ -80,7 +80,7 @@ class Receiver:
             sample = np.copy(self.read())
             samples.append(sample)
         data = np.concatenate(samples)
-        return Sample(self, data, self.sample_rate)
+        return Sample(data, self.sample_rate)
     
 # TODO: More intuitive way for calling buffer_size
 class Sample:
