@@ -72,28 +72,26 @@ class Receiver:
             received_sample.append(np.copy(self.read()))
         return np.concatenate(received_sample)
     
-    def getSample(self, num_samps=2048000):
-        return Sample(self, num_samps=num_samps, buffer_size=len(self.read_buffer))
+    def getSample(self, num_samps=2048000, buffer_size=1024):
+        self.set_buffer_size(buffer_size)
+        samples = []
+        iterations = num_samps // buffer_size
+        for i in range(iterations):
+            sample = np.copy(self.read())
+            samples.append(sample)
+        data = np.concatenate(samples)
+        return Sample(self, data, self.sample_rate)
     
 # TODO: More intuitive way for calling buffer_size
 class Sample:
-    def __init__(self, receiver, data=[], num_samps=2048000, buffer_size=1024):
-        receiver.set_buffer_size(buffer_size)
-        self.buffer_size = buffer_size
-        self.sample_rate = receiver.sample_rate
+    def __init__(self, data, sample_rate):
+        self.sample_rate = sample_rate
         self.data = data
-        self.samples = []
-        if len(self.data) == 0:
-            iterations = num_samps // buffer_size
-            for i in range(iterations):
-                sample = np.copy(receiver.read())
-                self.samples.append(sample)
-            self.data = np.concatenate(self.samples)
             
-    def display(self, fft_size=None):
+    def display(self, buffer_size=1024, fft_size=None):
         if fft_size == None:
-            fft_size = self.buffer_size
-        iterations = len(self.data) // self.buffer_size # This needs to be even
+            fft_size = buffer_size
+        iterations = len(self.data) // buffer_size # This needs to be even
         waterfall_data = np.zeros((iterations, fft_size))
         for i, buffer in enumerate(self.data.reshape(iterations, fft_size)):
             freq_domain = np.fft.fftshift(np.fft.fft(buffer, n=fft_size))
