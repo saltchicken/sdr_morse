@@ -4,6 +4,8 @@ import SoapySDR
 import time
 from SoapySDR import *
 
+from scipy.signal import butter, lfilter
+
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 plt.style.use('dark_background')
@@ -153,6 +155,15 @@ class Segment:
     def shift_center(self, frequency):
         wave_gen = self.cos_wave_generator(self.sample_rate, -frequency, len(self.data))
         self.data = self.data * next(wave_gen)
+        
+    def low_pass_filter(self, cutoff_frequency, filter_order=5):
+        nyquist_frequency = self.sample_rate / 2
+        normalized_cutoff_frequency = cutoff_frequency / nyquist_frequency
+        b, a = butter(filter_order, normalized_cutoff_frequency, btype='low')
+        filtered = lfilter(b, a, self.data)
+        filtered = filtered.astype(np.complex64)
+        assert self.data.dtype == filtered.dtype, "Output of filtered signal mismatched with sample signal"
+        self.data = filtered
         
     def plot(self):
         plt.plot(self.data)
