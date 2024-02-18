@@ -55,19 +55,7 @@ def peak_freq(sample, sample_rate):
         max_magnitude_index = np.argmax(np.abs(freq_domain))
         center_freq = frequencies[max_magnitude_index]
         return center_freq
-
-def low_pass_filter(sample, sample_rate, cutoff_frequency, filter_order=5):
-        nyquist_frequency = sample_rate / 2
-        normalized_cutoff_frequency = cutoff_frequency / nyquist_frequency
-        b, a = signal.butter(filter_order, normalized_cutoff_frequency, btype='low')
-        filtered = signal.lfilter(b, a, sample)
-        filtered = filtered.astype(np.complex64)
-        assert sample.dtype == filtered.dtype, "Output of filtered signal mismatched with sample signal"
-        return filtered
     
-def quad_demod(sample):
-    return 0.5 * np.angle(sample[:-1] * np.conj(sample[1:]))
-
 def downsample(sample, downsample_rate):
     return sample[::downsample_rate]
 
