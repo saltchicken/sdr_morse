@@ -68,3 +68,16 @@ class Receiver:
         for i in range(num_reads):
             received_sample.append(np.copy(self.read()))
         return np.concatenate(received_sample)
+    
+class Sample:
+    def __init__(self, receiver, sample_rate, data=None, num_samps=1024000, buffer_size=1024):
+        receiver.set_buffer_size(buffer_size)
+        self.sample_rate = sample_rate
+        self.data = data
+        self.samples = []
+        if self.data == None:
+            iterations = num_samps // buffer_size
+            for i in range(iterations):
+                sample = np.copy(receiver.read())
+                self.samples.append(sample)
+        self.data = np.concatenate(self.samples)
