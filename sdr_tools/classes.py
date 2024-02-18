@@ -169,7 +169,7 @@ class Segment:
         self.data = resample_poly(self.data, interpolation, decimation)#interpolation == upsample, decimation == downsample
         # return sample[::downsample_rate] Alternative
         
-    def decode(self, sample):
+    def decode(self):
         return (np.real(self.data) < 0).astype(int) # Why is real needed
     
     def plot(self):
