@@ -8,6 +8,7 @@ def plot(data):
     plt.plot(data)
     plt.show()
 
+# TODO: This is not being used.
 def generate_carrier(streamer, frequency, duration):
     t = np.arange(0, duration, 1 / streamer.sample_rate)
     carrier_signal = np.cos(2 * np.pi * frequency * t)
