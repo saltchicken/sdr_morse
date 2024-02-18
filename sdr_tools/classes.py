@@ -4,7 +4,7 @@ import SoapySDR
 import time
 from SoapySDR import *
 
-from scipy.signal import butter, lfilter
+from scipy.signal import butter, lfilter, resample_poly
 
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
@@ -164,7 +164,11 @@ class Segment:
         filtered = filtered.astype(np.complex64)
         assert self.data.dtype == filtered.dtype, "Output of filtered signal mismatched with sample signal"
         self.data = filtered
-        
+    
+    def resample(self, interpolation, decimation):
+        self.data = resample_poly(self.data, interpolation, decimation)#interpolation == upsample, decimation == downsample
+        # return sample[::downsample_rate] Alternative
+    
     def plot(self):
         plt.plot(self.data)
         plt.show()

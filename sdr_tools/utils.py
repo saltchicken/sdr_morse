@@ -56,12 +56,6 @@ def peak_freq(sample, sample_rate):
         center_freq = frequencies[max_magnitude_index]
         return center_freq
     
-def downsample(sample, downsample_rate):
-    return sample[::downsample_rate]
-
-def resample(sample, interpolation, decimation):
-    return signal.resample_poly(sample, interpolation, decimation)#interpolation == upsample, decimation == downsample
-
 def decode(sample):
     return (np.real(sample) < 0).astype(int) # Why is real needed
 
