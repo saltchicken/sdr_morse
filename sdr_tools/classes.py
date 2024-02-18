@@ -151,7 +151,7 @@ class Segment:
     
     # TODO: There may be an issue with calling this multiple times
     def shift_center(self, frequency):
-        wave_gen = self.cos_wave_generator(self.sample_rate, frequency, len(self.data))
+        wave_gen = self.cos_wave_generator(self.sample_rate, -frequency, len(self.data))
         self.data = self.data * next(wave_gen)
         
     def plot(self):
