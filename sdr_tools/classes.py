@@ -4,6 +4,9 @@ import SoapySDR
 import time
 from SoapySDR import *
 
+import matplotlib.pyplot as plt
+plt.style.use('dark_background')
+
 class UHD_TX_Streamer:
     def __init__(self, sample_rate, center_freq):
         self.sample_rate = sample_rate
@@ -69,9 +72,11 @@ class Receiver:
             received_sample.append(np.copy(self.read()))
         return np.concatenate(received_sample)
     
+# TODO: More intuitive way for calling buffer_size
 class Sample:
     def __init__(self, receiver, sample_rate, data=[], num_samps=1024000, buffer_size=1024):
         receiver.set_buffer_size(buffer_size)
+        self.buffer_size = buffer_size
         self.sample_rate = sample_rate
         self.data = data
         self.samples = []
@@ -81,3 +86,24 @@ class Sample:
                 sample = np.copy(receiver.read())
                 self.samples.append(sample)
             self.data = np.concatenate(self.samples)
+            
+    def display(self, fft_size=None):
+        if fft_size == None:
+            fft_size = self.buffer_size
+        iterations = len(self.data) // self.buffer_size # This needs to be even
+        waterfall_data = np.zeros((iterations, fft_size))
+        for i, buffer in enumerate(self.data.reshape(iterations, fft_size)):
+            freq_domain = np.fft.fftshift(np.fft.fft(buffer, n=fft_size))
+            max_magnitude_index = np.abs(freq_domain)
+            waterfall_data[i, :] = max_magnitude_index
+        
+        freq_range = self.sample_rate / 2000 # Half sample_rate and convert to kHz
+        sample_time = self.buffer_size * iterations / self.sample_rate
+        plt.figure(figsize=(12, 10))
+        plt.imshow(waterfall_data, extent=[-freq_range, freq_range, 0, sample_time], aspect='auto')
+        # plt.imshow(waterfall_data, aspect='auto')  # extent=[0, sample_rate / 1e3, 0, num_samples] ---- Also used LogNorm?
+        plt.xlabel('Frequency (kHz)')
+        plt.ylabel('Time (s)')
+        plt.title('Waterfall Plot')
+        plt.colorbar(label='Amplitude')
+        plt.show()
