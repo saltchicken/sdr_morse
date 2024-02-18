@@ -14,7 +14,7 @@ antenna = 'LNAW'
 
 # buffer_size = 10000000
 
-with classes.Receiver(sample_rate, frequency, antenna) as receiver:
+with Receiver(sample_rate, frequency, antenna) as receiver:
     embed()
 # receiver = classes.Receiver(sample_rate, frequency, antenna)
 
