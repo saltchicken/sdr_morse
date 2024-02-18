@@ -89,6 +89,27 @@ def modulate_shift(sample, sample_rate, frequency, buffer_size):
     wave_gen = cos_wave_generator(sample_rate, frequency, buffer_size)
     return sample * next(wave_gen)
 
+def display(sample, sample_rate, buffer_size=1024, fft_size=None):
+    if fft_size == None:
+        fft_size = buffer_size
+    iterations = len(sample) // buffer_size # This needs to be even
+    waterfall_data = np.zeros((iterations, fft_size))
+    for i, buffer in enumerate(sample.reshape(iterations, fft_size)):
+        freq_domain = np.fft.fftshift(np.fft.fft(buffer, n=fft_size))
+        max_magnitude_index = np.abs(freq_domain)
+        waterfall_data[i, :] = max_magnitude_index
+    
+    freq_range = sample_rate / 2000 # Half sample_rate and convert to kHz
+    sample_time = buffer_size * iterations / sample_rate
+    plt.figure(figsize=(12, 10))
+    plt.imshow(waterfall_data, extent=[-freq_range, freq_range, 0, sample_time], aspect='auto')
+    # plt.imshow(waterfall_data, aspect='auto')  # extent=[0, sample_rate / 1e3, 0, num_samples] ---- Also used LogNorm?
+    plt.xlabel('Frequency (kHz)')
+    plt.ylabel('Time (s)')
+    plt.title('Waterfall Plot')
+    plt.colorbar(label='Amplitude')
+    plt.show()
+
 def display_sample(receiver, iterations=1000, buffer_size=1024, fft_size=None):
     receiver.set_buffer_size(buffer_size)
     if fft_size == None:
