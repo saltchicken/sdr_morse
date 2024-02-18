@@ -72,6 +72,9 @@ class Receiver:
             received_sample.append(np.copy(self.read()))
         return np.concatenate(received_sample)
     
+    def getSample(self, num_samps=2048000):
+        return Sample(self, num_samps=num_samps, buffer_size=len(self.read_buffer))
+    
 # TODO: More intuitive way for calling buffer_size
 class Sample:
     def __init__(self, receiver, data=[], num_samps=2048000, buffer_size=1024):
