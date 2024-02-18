@@ -99,7 +99,7 @@ class Sample:
             waterfall_data[i, :] = max_magnitude_index
         
         freq_range = self.sample_rate / 2000 # Half sample_rate and convert to kHz
-        sample_time = self.buffer_size * iterations / self.sample_rate
+        sample_time = buffer_size * iterations / self.sample_rate
         plt.figure(figsize=(12, 10))
         plt.imshow(waterfall_data, extent=[-freq_range, freq_range, 0, sample_time], aspect='auto')
         # plt.imshow(waterfall_data, aspect='auto')  # extent=[0, sample_rate / 1e3, 0, num_samples] ---- Also used LogNorm?
