@@ -168,9 +168,6 @@ class Segment:
     def resample(self, interpolation, decimation):
         self.data = resample_poly(self.data, interpolation, decimation)#interpolation == upsample, decimation == downsample
         # return sample[::downsample_rate] Alternative
-        
-    def decode(self):
-        return (np.real(self.data) < 0).astype(int) # Why is real needed
     
     def plot(self):
         plt.plot(self.data)
@@ -182,3 +179,5 @@ class QuadDemodSegment(Segment):
         self.data = self.quad_demod(self.data)
     def quad_demod(self, sample):
         return 0.5 * np.angle(sample[:-1] * np.conj(sample[1:]))
+    def decode(self):
+        return (np.real(self.data) < 0).astype(int) # Why is real needed
