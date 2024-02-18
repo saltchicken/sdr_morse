@@ -5,6 +5,7 @@ import time
 from SoapySDR import *
 
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 plt.style.use('dark_background')
 
 class UHD_TX_Streamer:
@@ -81,6 +82,38 @@ class Receiver:
             samples.append(sample)
         data = np.concatenate(samples)
         return Segment(data, self.sample_rate)
+    
+    def waterfall(self, iterations=1000, buffer_size=1024, fft_size=None):
+        self.set_buffer_size(buffer_size)
+        if fft_size == None:
+            fft_size = buffer_size
+        waterfall_data = np.zeros((iterations, fft_size))
+        
+        fig, ax = plt.subplots()
+        fig.set_size_inches(12, 10)
+        im = ax.imshow(waterfall_data, cmap='viridis')
+        
+        freq_range = self.sample_rate / 2000 # Half sample_rate and convert to kHz
+        sample_time = buffer_size * iterations / self.sample_rate
+        plt.imshow(waterfall_data, extent=[-freq_range, freq_range, 0, sample_time], aspect='auto')
+        ax.set_xlabel('Frequency (kHz)')
+        ax.set_ylabel('Time (s)')
+        ax.set_title('Waterfall Plot')
+        fig.colorbar(im, label='Amplitude')
+        
+        def update_image(frame):
+            for i in range(iterations):
+                sample = np.copy(self.read())
+                freq_domain = np.fft.fftshift(np.fft.fft(sample, n=fft_size))
+                max_magnitude_index = np.abs(freq_domain)
+                waterfall_data[i, :] = max_magnitude_index
+            im.set_array(waterfall_data)
+            im.set_extent([-freq_range, freq_range, 0, sample_time])
+            return im,
+        
+        interval = 0  # milliseconds
+        ani = FuncAnimation(fig, update_image, interval=interval, blit=True)
+        plt.show()
     
 # TODO: More intuitive way for calling buffer_size
 class Segment:
