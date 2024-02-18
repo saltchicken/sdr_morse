@@ -15,6 +15,16 @@ antenna = 'LNAW'
 # buffer_size = 10000000
 
 with Receiver(sample_rate, frequency, antenna) as receiver:
+    segment = receiver.getSegment()
+    segment.display()
+    segment.shift_center(540000)
+    segment.display()
+    segment.low_pass_filter(10000)
+    segment.display()
+    demod = QuadDemodSegment(segment)
+    demod.plot()
+    demod.decode()
+    
     embed()
 # receiver = classes.Receiver(sample_rate, frequency, antenna)
 
