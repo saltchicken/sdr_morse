@@ -24,6 +24,7 @@ with Receiver(sample_rate, frequency, antenna) as receiver:
     demod = QuadDemodSegment(segment)
     demod.plot()
     demod.resample(1, 128000)
+    demod.plot()
     demod.decode()
     
     embed()
