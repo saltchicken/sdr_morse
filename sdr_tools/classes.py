@@ -72,7 +72,7 @@ class Receiver:
             received_sample.append(np.copy(self.read()))
         return np.concatenate(received_sample)
     
-    def getSample(self, num_samps=2048000, buffer_size=1024):
+    def getSegment(self, num_samps=2048000, buffer_size=1024):
         self.set_buffer_size(buffer_size)
         samples = []
         iterations = num_samps // buffer_size
@@ -80,10 +80,10 @@ class Receiver:
             sample = np.copy(self.read())
             samples.append(sample)
         data = np.concatenate(samples)
-        return Sample(data, self.sample_rate)
+        return Segment(data, self.sample_rate)
     
 # TODO: More intuitive way for calling buffer_size
-class Sample:
+class Segment:
     def __init__(self, data, sample_rate):
         self.sample_rate = sample_rate
         self.data = data
