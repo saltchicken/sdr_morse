@@ -77,7 +77,7 @@ class Sample:
     def __init__(self, receiver, data=[], num_samps=1024000, buffer_size=1024):
         receiver.set_buffer_size(buffer_size)
         self.buffer_size = buffer_size
-        self.sample_rate = sample_rate
+        self.sample_rate = receiver.sample_rate
         self.data = data
         self.samples = []
         if len(self.data) == 0:
