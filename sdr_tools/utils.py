@@ -55,7 +55,3 @@ def peak_freq(sample, sample_rate):
         max_magnitude_index = np.argmax(np.abs(freq_domain))
         center_freq = frequencies[max_magnitude_index]
         return center_freq
-    
-def decode(sample):
-    return (np.real(sample) < 0).astype(int) # Why is real needed
-
