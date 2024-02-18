@@ -81,21 +81,24 @@ def downsample(sample, downsample_rate):
 def resample(sample, interpolation, decimation):
     return signal.resample_poly(sample, interpolation, decimation)#interpolation == upsample, decimation == downsample
 
+def decode(sample):
+    return (np.real(sample) < 0).astype(int) # Why is real needed
+
+# TODO: There may be an issue with calling this multiple times
+def modulate_shift(sample, sample_rate, frequency, buffer_size):
+    wave_gen = cos_wave_generator(sample_rate, frequency, buffer_size)
+    return sample * next(wave_gen)
+
 def display_sample(receiver, iterations=1000, buffer_size=1024, fft_size=None):
     receiver.set_buffer_size(buffer_size)
     if fft_size == None:
         fft_size = buffer_size
     samples = []
     waterfall_data = np.zeros((iterations, fft_size))
-    frequency = -540000
-    wave_gen = cos_wave_generator(receiver.sample_rate, frequency, buffer_size)
     for i in range(iterations):
             sample = np.copy(receiver.read())
-            modulated_sample = sample * next(wave_gen)
-            samples.append(modulated_sample)
-            # samples.append(sample)
-            freq_domain = np.fft.fftshift(np.fft.fft(modulated_sample, n=fft_size))
-            # freq_domain = np.fft.fftshift(np.fft.fft(sample, n=fft_size))
+            samples.append(sample)
+            freq_domain = np.fft.fftshift(np.fft.fft(sample, n=fft_size))
             max_magnitude_index = np.abs(freq_domain)
             waterfall_data[i, :] = max_magnitude_index
     result = np.concatenate(samples)
