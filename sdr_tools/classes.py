@@ -53,10 +53,6 @@ class Segment:
         wave_gen = self.cos_wave_generator(self.sample_rate, -frequency, len(self.data))
         self.data = self.data * next(wave_gen)
     
-    def resample(self, interpolation, decimation):
-        self.data = resample_poly(self.data, interpolation, decimation)#interpolation == upsample, decimation == downsample
-        # return sample[::downsample_rate] Alternative
-    
     def plot(self):
         plt.plot(self.data)
         plt.show()
@@ -228,8 +224,6 @@ class QuadDemodSegment(Segment):
         self.data = self.quad_demod(self.data)
     def quad_demod(self, segment):
         return 0.5 * np.angle(segment[:-1] * np.conj(segment[1:]))
-    def decode(self):
-        return (np.real(self.data) < 0).astype(int) # Why is real needed
     
 class Filter(Segment):
     def __init__(self, segment: Segment):
@@ -245,6 +239,14 @@ class Filter(Segment):
         assert data.dtype == filtered.dtype, "Output of filtered signal mismatched with sample signal"
         return filtered
     
+class Resample(Segment):
+    def __init__(self, segment: Segment, interpolation=1, decimation=1):
+        super().__init__(segment.data, segment.sample_rate)
+        self.data = self.resample(self.data, interpolation, decimation)
+    def resample(self, interpolation, decimation):
+        return resample_poly(self.data, interpolation, decimation)#interpolation == upsample, decimation == downsample
+        # return sample[::downsample_rate] Alternative
+        
 class DecodedSegment(Segment):
     def __init__(self, segment: Segment):
         super().__init__(segment.data, segment.sample_rate)
@@ -264,9 +266,13 @@ class DecodedSegment(Segment):
         plt.plot(self.demod.data)
         
         plt.subplot(2, 2, 4)
-        self.demod.resample(1, 128000)
-        plt.plot(self.demod.data)
-        print(self.demod.decode())
+        self.resample = Resample(self.demod, 1, 128000)
+        plt.plot(self.resample.data)
+        print(self.decode(self.resample))
         plt.show()
+        
+    def decode(self, segment:Segment):
+        return (np.real(segment.data) < 0).astype(int) # Why is real needed
+        
     
     
