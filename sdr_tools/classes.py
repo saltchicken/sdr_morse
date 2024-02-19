@@ -75,7 +75,7 @@ class Receiver:
             received_sample.append(np.copy(self.read()))
         return np.concatenate(received_sample)
     
-    def getSegment(self, num_samps=2048000, buffer_size=1024):
+    def getSegment(self, num_samps=2048000, buffer_size=1024, center_frequency=None):
         self.set_buffer_size(buffer_size)
         samples = []
         iterations = num_samps // buffer_size
@@ -83,7 +83,12 @@ class Receiver:
             sample = np.copy(self.read())
             samples.append(sample)
         data = np.concatenate(samples)
-        return Segment(data, self.sample_rate)
+        if center_frequency:
+            segment = Segment(data, self.sample_rate)
+            segment.shift_center(center_frequency)
+            return segment
+        else:
+            return Segment(data, self.sample_rate)
     
     def waterfall(self, iterations=1000, buffer_size=1024, fft_size=None):
         self.set_buffer_size(buffer_size)
