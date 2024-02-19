@@ -243,8 +243,8 @@ class Resample(Segment):
     def __init__(self, segment: Segment, interpolation=1, decimation=1):
         super().__init__(segment.data, segment.sample_rate)
         self.data = self.resample(self.data, interpolation, decimation)
-    def resample(self, interpolation, decimation):
-        return resample_poly(self.data, interpolation, decimation)#interpolation == upsample, decimation == downsample
+    def resample(self, data, interpolation, decimation):
+        return resample_poly(data, interpolation, decimation)#interpolation == upsample, decimation == downsample
         # return sample[::downsample_rate] Alternative
         
 class DecodedSegment(Segment):
