@@ -181,11 +181,11 @@ class Segment:
         plt.show()
         
 class QuadDemodSegment(Segment):
-    def __init__(self, sample):
-        super().__init__(sample.data, sample.sample_rate)
+    def __init__(self, segment):
+        super().__init__(segment.data, segment.sample_rate)
         self.data = self.quad_demod(self.data)
-    def quad_demod(self, sample):
-        return 0.5 * np.angle(sample[:-1] * np.conj(sample[1:]))
+    def quad_demod(self, segment):
+        return 0.5 * np.angle(segment[:-1] * np.conj(segment[1:]))
     def decode(self):
         return (np.real(self.data) < 0).astype(int) # Why is real needed
     
