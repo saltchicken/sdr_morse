@@ -207,6 +207,7 @@ class DecodedSegment(Segment):
         
         plt.subplot(2, 2, 4)
         self.demod.resample(1, 128000)
+        plt.plot(self.demod.data)
         print(self.demod.decode())
         plt.show()
     
