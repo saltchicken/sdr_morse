@@ -60,14 +60,15 @@ class UHD_TX_Streamer:
                 print("Something is wrong with the binary_string")
             transmission_signal.real[start_index:end_index] = symbol_wave_real[0:symbol_length]
             transmission_signal.imag[start_index:end_index] = symbol_wave_imag[0:symbol_length]
-        return transmission_signal
+        transmission_segment = Segment(transmission_signal, sample_rate)
+        return Packet(transmission_segment)
     
     def burst(self, signal, times, pause_delay=0):
         for i in range(times):
             self.send(signal)
             if pause_delay:
                 time.sleep(pause_delay)
-        
+   
         
 class Receiver:
     def __init__(self, sample_rate, frequency, antenna, freq_correction=0, read_buffer_size=1024):
@@ -256,3 +257,7 @@ class DecodedSegment(Segment):
         print(self.demod.decode())
         plt.show()
     
+    
+class Packet(Segment): 
+    def __init__(self, segment: Segment):
+        super().__init__(segment.data, segment.sample_rate)
