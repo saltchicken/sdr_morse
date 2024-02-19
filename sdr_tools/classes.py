@@ -189,23 +189,24 @@ class QuadDemodSegment(Segment):
     def decode(self):
         return (np.real(self.data) < 0).astype(int) # Why is real needed
     
-class Decoder():
+class DecodedSegment(Segment):
     def __init__(self, segment: Segment):
+        super().__init__(segment.data, segment.sample_rate)
+        
         plt.figure(figsize=(10, 8))
         plt.subplot(2, 2, 1)
-        plt.plot(segment.data)
+        plt.plot(self.data)
         
         plt.subplot(2, 2, 2)
-        segment.shift_center(540000)
-        plt.plot(segment.data)
+        self.low_pass_filter(10000)
+        plt.plot(self.data)
         
         plt.subplot(2, 2, 3)
-        segment.low_pass_filter(10000)
-        plt.plot(segment.data)
+        self.demod = QuadDemodSegment(self)
+        plt.plot(self.demod.data)
         
         plt.subplot(2, 2, 4)
-        demod = QuadDemodSegment(segment)
-        demod.resample(1, 128000)
-        print(demod.decode())
+        self.demod.resample(1, 128000)
+        print(self.demod.decode())
         plt.show()
     
