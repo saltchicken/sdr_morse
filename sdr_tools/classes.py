@@ -142,6 +142,8 @@ class Segment:
         sample_time = buffer_size * iterations / self.sample_rate
         plt.figure(figsize=(12, 10))
         plt.imshow(waterfall_data, extent=[-freq_range, freq_range, 0, sample_time], aspect='auto')
+        manager = plt.get_current_fig_manager()
+        manager.window.geometry("+100+100")
         # plt.imshow(waterfall_data, aspect='auto')  # extent=[0, sample_rate / 1e3, 0, num_samples] ---- Also used LogNorm?
         plt.xlabel('Frequency (kHz)')
         plt.ylabel('Time (s)')
@@ -186,3 +188,24 @@ class QuadDemodSegment(Segment):
         return 0.5 * np.angle(sample[:-1] * np.conj(sample[1:]))
     def decode(self):
         return (np.real(self.data) < 0).astype(int) # Why is real needed
+    
+class Decoder():
+    def __init__(self, segment: Segment):
+        plt.figure(figsize=(10, 8))
+        plt.subplot(2, 2, 1)
+        plt.plot(segment.data)
+        
+        plt.subplot(2, 2, 2)
+        segment.shift_center(540000)
+        plt.plot(segment.data)
+        
+        plt.subplot(2, 2, 3)
+        segment.low_pass_filter(10000)
+        plt.plot(segment.data)
+        
+        plt.subplot(2, 2, 4)
+        demod = QuadDemodSegment(segment)
+        demod.resample(1, 128000)
+        print(demod.decode())
+        plt.show()
+    
