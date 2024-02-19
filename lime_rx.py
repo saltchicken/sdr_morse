@@ -1,4 +1,4 @@
-from sdr_tools.classes import Receiver, Segment, QuadDemodSegment
+from sdr_tools.classes import Receiver, Segment, QuadDemodSegment, DecodedSegment
 from sdr_tools import utils
 import numpy as np
 
