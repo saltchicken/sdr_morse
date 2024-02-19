@@ -243,7 +243,7 @@ class Filter(Segment):
         filtered = lfilter(b, a, data)
         filtered = filtered.astype(np.complex64)
         assert data.dtype == filtered.dtype, "Output of filtered signal mismatched with sample signal"
-        self.data = filtered
+        return filtered
     
 class DecodedSegment(Segment):
     def __init__(self, segment: Segment):
