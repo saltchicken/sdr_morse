@@ -201,7 +201,8 @@ class DecodedSegment(Segment):
         
         plt.subplot(2, 2, 2)
         self.low_pass_filter(10000)
-        plt.plot(self.data)
+        # plt.plot(self.data)
+        self.display(subplot=True)
         
         plt.subplot(2, 2, 3)
         self.demod = QuadDemodSegment(self)
