@@ -10,6 +10,70 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 plt.style.use('dark_background')
 
+
+# TODO: More intuitive way for calling buffer_size
+class Segment:
+    def __init__(self, data, sample_rate):
+        self.sample_rate = sample_rate
+        self.data = data
+            
+    def display(self, buffer_size=1024, fft_size=None, subplot=False):
+        if fft_size == None:
+            fft_size = buffer_size
+        iterations = len(self.data) // buffer_size # This needs to be even
+        waterfall_data = np.zeros((iterations, fft_size))
+        for i, buffer in enumerate(self.data.reshape(iterations, fft_size)):
+            freq_domain = np.fft.fftshift(np.fft.fft(buffer, n=fft_size))
+            max_magnitude_index = np.abs(freq_domain)
+            waterfall_data[i, :] = max_magnitude_index
+        
+        freq_range = self.sample_rate / 2000 # Half sample_rate and convert to kHz
+        sample_time = buffer_size * iterations / self.sample_rate
+        # plt.figure(figsize=(12, 10))
+        plt.imshow(waterfall_data, extent=[-freq_range, freq_range, 0, sample_time], aspect='auto')
+        # manager = plt.get_current_fig_manager()
+        # manager.window.geometry("+100+100")
+        # plt.imshow(waterfall_data, aspect='auto')  # extent=[0, sample_rate / 1e3, 0, num_samples] ---- Also used LogNorm?
+        plt.xlabel('Frequency (kHz)')
+        plt.ylabel('Time (s)')
+        plt.title('Waterfall Plot')
+        plt.colorbar(label='Amplitude')
+        if not subplot:
+            plt.show()
+        
+    def cos_wave_generator(self, sample_rate, frequency, samples):
+        i = 0
+        while True:
+            t = (np.arange(samples) + i * samples) / sample_rate
+            yield np.exp(1j * 2 * np.pi * frequency * t).astype(np.complex64)
+            i += 1
+    
+    # TODO: There may be an issue with calling this multiple times
+    def shift_center(self, frequency):
+        wave_gen = self.cos_wave_generator(self.sample_rate, -frequency, len(self.data))
+        self.data = self.data * next(wave_gen)
+        
+    def low_pass_filter(self, cutoff_frequency, filter_order=5):
+        nyquist_frequency = self.sample_rate / 2
+        normalized_cutoff_frequency = cutoff_frequency / nyquist_frequency
+        b, a = butter(filter_order, normalized_cutoff_frequency, btype='low')
+        filtered = lfilter(b, a, self.data)
+        filtered = filtered.astype(np.complex64)
+        assert self.data.dtype == filtered.dtype, "Output of filtered signal mismatched with sample signal"
+        self.data = filtered
+    
+    def resample(self, interpolation, decimation):
+        self.data = resample_poly(self.data, interpolation, decimation)#interpolation == upsample, decimation == downsample
+        # return sample[::downsample_rate] Alternative
+    
+    def plot(self):
+        plt.plot(self.data)
+        plt.show()
+
+class Packet(Segment): 
+    def __init__(self, segment: Segment):
+        super().__init__(segment.data, segment.sample_rate)
+        
 class UHD_TX_Streamer:
     def __init__(self, sample_rate, center_freq):
         self.sample_rate = sample_rate
@@ -24,8 +88,8 @@ class UHD_TX_Streamer:
         # self.metadata.time_spec = uhd.types.TimeSpec(self.usrp.get_time_now().get_real_secs() + INIT_DELAY)
         # self.metadata.has_time_spec = bool(self.streamer.get_num_channels())
     
-    def send(self, message):
-        self.streamer.send(message, self.metadata)
+    def send(self, packet: Packet):
+        self.streamer.send(packet.data, self.metadata)
     
     def generate_fm_packet(self, binary_string, frequency, second_frequency, duration, sample_rate):
         t = np.arange(0, duration, 1 / sample_rate)
@@ -63,9 +127,9 @@ class UHD_TX_Streamer:
         transmission_segment = Segment(transmission_signal, sample_rate)
         return Packet(transmission_segment)
     
-    def burst(self, signal, times, pause_delay=0):
+    def burst(self, packet: Packet, times, pause_delay=0):
         for i in range(times):
-            self.send(signal)
+            self.send(packet)
             if pause_delay:
                 time.sleep(pause_delay)
    
@@ -165,64 +229,7 @@ class Receiver:
         ani = FuncAnimation(fig, update_image, interval=interval, blit=True)
         plt.show()
     
-# TODO: More intuitive way for calling buffer_size
-class Segment:
-    def __init__(self, data, sample_rate):
-        self.sample_rate = sample_rate
-        self.data = data
-            
-    def display(self, buffer_size=1024, fft_size=None, subplot=False):
-        if fft_size == None:
-            fft_size = buffer_size
-        iterations = len(self.data) // buffer_size # This needs to be even
-        waterfall_data = np.zeros((iterations, fft_size))
-        for i, buffer in enumerate(self.data.reshape(iterations, fft_size)):
-            freq_domain = np.fft.fftshift(np.fft.fft(buffer, n=fft_size))
-            max_magnitude_index = np.abs(freq_domain)
-            waterfall_data[i, :] = max_magnitude_index
-        
-        freq_range = self.sample_rate / 2000 # Half sample_rate and convert to kHz
-        sample_time = buffer_size * iterations / self.sample_rate
-        # plt.figure(figsize=(12, 10))
-        plt.imshow(waterfall_data, extent=[-freq_range, freq_range, 0, sample_time], aspect='auto')
-        # manager = plt.get_current_fig_manager()
-        # manager.window.geometry("+100+100")
-        # plt.imshow(waterfall_data, aspect='auto')  # extent=[0, sample_rate / 1e3, 0, num_samples] ---- Also used LogNorm?
-        plt.xlabel('Frequency (kHz)')
-        plt.ylabel('Time (s)')
-        plt.title('Waterfall Plot')
-        plt.colorbar(label='Amplitude')
-        if not subplot:
-            plt.show()
-        
-    def cos_wave_generator(self, sample_rate, frequency, samples):
-        i = 0
-        while True:
-            t = (np.arange(samples) + i * samples) / sample_rate
-            yield np.exp(1j * 2 * np.pi * frequency * t).astype(np.complex64)
-            i += 1
-    
-    # TODO: There may be an issue with calling this multiple times
-    def shift_center(self, frequency):
-        wave_gen = self.cos_wave_generator(self.sample_rate, -frequency, len(self.data))
-        self.data = self.data * next(wave_gen)
-        
-    def low_pass_filter(self, cutoff_frequency, filter_order=5):
-        nyquist_frequency = self.sample_rate / 2
-        normalized_cutoff_frequency = cutoff_frequency / nyquist_frequency
-        b, a = butter(filter_order, normalized_cutoff_frequency, btype='low')
-        filtered = lfilter(b, a, self.data)
-        filtered = filtered.astype(np.complex64)
-        assert self.data.dtype == filtered.dtype, "Output of filtered signal mismatched with sample signal"
-        self.data = filtered
-    
-    def resample(self, interpolation, decimation):
-        self.data = resample_poly(self.data, interpolation, decimation)#interpolation == upsample, decimation == downsample
-        # return sample[::downsample_rate] Alternative
-    
-    def plot(self):
-        plt.plot(self.data)
-        plt.show()
+
         
 class QuadDemodSegment(Segment):
     def __init__(self, segment):
@@ -258,6 +265,3 @@ class DecodedSegment(Segment):
         plt.show()
     
     
-class Packet(Segment): 
-    def __init__(self, segment: Segment):
-        super().__init__(segment.data, segment.sample_rate)
