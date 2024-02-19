@@ -233,7 +233,7 @@ class QuadDemodSegment(Segment):
     
 class Filter(Segment):
     def __init__(self, segment: Segment):
-        super().__init(segment.data, segment.sample_rate)
+        super().__init__(segment.data, segment.sample_rate)
         self.data = self.low_pass_filter(self.data, 10000)
         
     def low_pass_filter(self, data, cutoff_frequency, filter_order=5):
