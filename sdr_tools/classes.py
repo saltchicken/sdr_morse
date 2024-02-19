@@ -52,15 +52,6 @@ class Segment:
     def shift_center(self, frequency):
         wave_gen = self.cos_wave_generator(self.sample_rate, -frequency, len(self.data))
         self.data = self.data * next(wave_gen)
-        
-    def low_pass_filter(self, cutoff_frequency, filter_order=5):
-        nyquist_frequency = self.sample_rate / 2
-        normalized_cutoff_frequency = cutoff_frequency / nyquist_frequency
-        b, a = butter(filter_order, normalized_cutoff_frequency, btype='low')
-        filtered = lfilter(b, a, self.data)
-        filtered = filtered.astype(np.complex64)
-        assert self.data.dtype == filtered.dtype, "Output of filtered signal mismatched with sample signal"
-        self.data = filtered
     
     def resample(self, interpolation, decimation):
         self.data = resample_poly(self.data, interpolation, decimation)#interpolation == upsample, decimation == downsample
@@ -240,6 +231,20 @@ class QuadDemodSegment(Segment):
     def decode(self):
         return (np.real(self.data) < 0).astype(int) # Why is real needed
     
+class Filter(Segment):
+    def __init__(self, segment: Segment):
+        super().__init(segment.data, segment.sample_rate)
+        self.data = self.low_pass_filter(self.data, 10000)
+        
+    def low_pass_filter(self, data, cutoff_frequency, filter_order=5):
+        nyquist_frequency = self.sample_rate / 2
+        normalized_cutoff_frequency = cutoff_frequency / nyquist_frequency
+        b, a = butter(filter_order, normalized_cutoff_frequency, btype='low')
+        filtered = lfilter(b, a, data)
+        filtered = filtered.astype(np.complex64)
+        assert data.dtype == filtered.dtype, "Output of filtered signal mismatched with sample signal"
+        self.data = filtered
+    
 class DecodedSegment(Segment):
     def __init__(self, segment: Segment):
         super().__init__(segment.data, segment.sample_rate)
@@ -250,12 +255,12 @@ class DecodedSegment(Segment):
         self.display(subplot=True)
         
         plt.subplot(2, 2, 2)
-        self.low_pass_filter(10000)
+        self.lowpass = Filter(self)
         # plt.plot(self.data)
-        self.display(subplot=True)
+        self.lowpass.display(subplot=True)
         
         plt.subplot(2, 2, 3)
-        self.demod = QuadDemodSegment(self)
+        self.demod = QuadDemodSegment(self.lowpass)
         plt.plot(self.demod.data)
         
         plt.subplot(2, 2, 4)
