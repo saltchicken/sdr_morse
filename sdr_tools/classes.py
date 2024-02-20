@@ -213,13 +213,11 @@ class Receiver:
             sample = sample.reshape(buffer_fixer, buffer_size)
             decimator = 4
             sample = sample[::decimator]
-            fixer = []
             for i in range(buffer_fixer//decimator):
-                freq_domain = np.fft.fftshift(np.fft.fft(sample, n=fft_size))
+                freq_domain = np.fft.fftshift(np.fft.fft(sample[i], n=fft_size))
                 max_magnitude_index = np.abs(freq_domain)
-                fixer.append(max_magnitude_index)
-            waterfall_data[buffer_fixer//decimator:, :] = waterfall_data[:-buffer_fixer//decimator, :]
-            waterfall_data[:buffer_fixer//decimator, :] = max_magnitude_index
+                waterfall_data[1:, :] = waterfall_data[:-1, :]
+                waterfall_data[0, :] = max_magnitude_index
             im.set_array(waterfall_data)
             im.set_extent([-freq_range, freq_range, 0, sample_time])
             return im,
