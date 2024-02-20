@@ -203,11 +203,11 @@ class Receiver:
         fig.colorbar(im, label='Amplitude')
         
         def update_image(frame):
-            for i in range(iterations):
-                sample = np.copy(self.read())
-                freq_domain = np.fft.fftshift(np.fft.fft(sample, n=fft_size))
-                max_magnitude_index = np.abs(freq_domain)
-                waterfall_data[i, :] = max_magnitude_index
+            sample = np.copy(self.read())
+            freq_domain = np.fft.fftshift(np.fft.fft(sample, n=fft_size))
+            max_magnitude_index = np.abs(freq_domain)
+            waterfall_data[1:, :] = waterfall_data[:-1, :]
+            waterfall_data[0, :] = max_magnitude_index
             im.set_array(waterfall_data)
             im.set_extent([-freq_range, freq_range, 0, sample_time])
             return im,
