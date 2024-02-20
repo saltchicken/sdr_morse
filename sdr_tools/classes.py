@@ -184,7 +184,7 @@ class Receiver:
         else:
             return Segment(data, self.sample_rate)
     
-    def waterfall(self, iterations=300, buffer_size=1024, fft_size=256):
+    def waterfall(self, iterations=1000, buffer_size=1024, fft_size=256, decimator=4):
         buffer_fixer = 100
         if fft_size == None:
             fft_size = buffer_size
@@ -195,15 +195,15 @@ class Receiver:
         im = ax.imshow(waterfall_data, cmap='viridis')
         
         freq_range = self.sample_rate / 2000 # Half sample_rate and convert to kHz
-        sample_time = buffer_size * iterations / self.sample_rate
-        plt.imshow(waterfall_data, extent=[-freq_range, freq_range, 0, sample_time], aspect='auto')
+        time_domain = buffer_size * iterations * decimator / self.sample_rate
+        plt.imshow(waterfall_data, extent=[-freq_range, freq_range, 0, time_domain], aspect='auto')
         ax.set_xlabel('Frequency (kHz)')
         ax.set_ylabel('Time (s)')
         ax.set_title('Waterfall Plot')
         fig.colorbar(im, label='Amplitude')
         
         # Clear the read_buffer of Soapy Device
-        self.set_buffer_size(int(2e6))
+        self.set_buffer_size(int(4e6))
         self.read()
         # Set to the corrent buffer_size for reading
         self.set_buffer_size(buffer_size * buffer_fixer)
@@ -211,7 +211,6 @@ class Receiver:
         def update_image(frame):
             sample = self.read()
             sample = sample.reshape(buffer_fixer, buffer_size)
-            decimator = 4
             sample = sample[::decimator]
             for i in range(buffer_fixer//decimator):
                 freq_domain = np.fft.fftshift(np.fft.fft(sample[i], n=fft_size))
@@ -219,7 +218,7 @@ class Receiver:
                 waterfall_data[1:, :] = waterfall_data[:-1, :]
                 waterfall_data[0, :] = max_magnitude_index
             im.set_array(waterfall_data)
-            im.set_extent([-freq_range, freq_range, 0, sample_time])
+            im.set_extent([-freq_range, freq_range, 0, time_domain])
             return im,
         
         interval = 0  # milliseconds
