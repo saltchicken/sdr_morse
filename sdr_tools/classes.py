@@ -184,8 +184,9 @@ class Receiver:
         else:
             return Segment(data, self.sample_rate)
     
-    def waterfall(self, iterations=1000, buffer_size=1024, fft_size=None):
-        self.set_buffer_size(buffer_size)
+    def waterfall(self, iterations=100, buffer_size=1024, fft_size=None):
+        buffer_fixer = 10
+        self.set_buffer_size(buffer_size * 10)
         if fft_size == None:
             fft_size = buffer_size
         waterfall_data = np.zeros((iterations, fft_size))
@@ -204,10 +205,14 @@ class Receiver:
         
         def update_image(frame):
             sample = self.read()
-            freq_domain = np.fft.fftshift(np.fft.fft(sample, n=fft_size))
-            max_magnitude_index = np.abs(freq_domain)
-            waterfall_data[1:, :] = waterfall_data[:-1, :]
-            waterfall_data[0, :] = max_magnitude_index
+            sample = sample.reshape(buffer_fixer, buffer_size)
+            fixer = []
+            for i in range(buffer_fixer):
+                freq_domain = np.fft.fftshift(np.fft.fft(sample, n=fft_size))
+                max_magnitude_index = np.abs(freq_domain)
+                fixer.append(max_magnitude_index)
+            waterfall_data[buffer_fixer:, :] = waterfall_data[:-buffer_fixer, :]
+            waterfall_data[:buffer_fixer, :] = max_magnitude_index
             im.set_array(waterfall_data)
             im.set_extent([-freq_range, freq_range, 0, sample_time])
             return im,
