@@ -184,9 +184,8 @@ class Receiver:
         else:
             return Segment(data, self.sample_rate)
     
-    def waterfall(self, iterations=100, buffer_size=1024, fft_size=None):
-        buffer_fixer = 10
-        self.set_buffer_size(buffer_size * 10)
+    def waterfall(self, iterations=300, buffer_size=1024, fft_size=256):
+        buffer_fixer = 100
         if fft_size == None:
             fft_size = buffer_size
         waterfall_data = np.zeros((iterations, fft_size))
@@ -203,16 +202,24 @@ class Receiver:
         ax.set_title('Waterfall Plot')
         fig.colorbar(im, label='Amplitude')
         
+        # Clear the read_buffer of Soapy Device
+        self.set_buffer_size(int(2e6))
+        self.read()
+        # Set to the corrent buffer_size for reading
+        self.set_buffer_size(buffer_size * buffer_fixer)
+        
         def update_image(frame):
             sample = self.read()
             sample = sample.reshape(buffer_fixer, buffer_size)
+            decimator = 4
+            sample = sample[::decimator]
             fixer = []
-            for i in range(buffer_fixer):
+            for i in range(buffer_fixer//decimator):
                 freq_domain = np.fft.fftshift(np.fft.fft(sample, n=fft_size))
                 max_magnitude_index = np.abs(freq_domain)
                 fixer.append(max_magnitude_index)
-            waterfall_data[buffer_fixer:, :] = waterfall_data[:-buffer_fixer, :]
-            waterfall_data[:buffer_fixer, :] = max_magnitude_index
+            waterfall_data[buffer_fixer//decimator:, :] = waterfall_data[:-buffer_fixer//decimator, :]
+            waterfall_data[:buffer_fixer//decimator, :] = max_magnitude_index
             im.set_array(waterfall_data)
             im.set_extent([-freq_range, freq_range, 0, sample_time])
             return im,
