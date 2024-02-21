@@ -80,8 +80,10 @@ class UHD_TX_Streamer:
         self.streamer.send(packet.data, self.metadata)
         
     def generateBPSK(self):
-        bits = np.array([1,0,0,0,1,1,0,0,0,1], np.complex64)
+        bits = np.array([1,0,0,0,1,1,0,0,0,1,1,1,0,0,1,1], np.complex64)
+        bits = np.tile(bits, 100)
         num_symbols = len(bits)
+        print("Num symbols: ", num_symbols)
         sps = 8
         sample_rate = self.sample_rate
         x = np.array([])
