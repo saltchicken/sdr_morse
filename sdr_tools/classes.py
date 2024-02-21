@@ -84,6 +84,7 @@ class UHD_TX_Streamer:
         num_symbols = len(bits)
         sps = 8
         sample_rate = self.sample_rate
+        x = np.array([])
         for bit in bits:
             pulse = np.zeros(sps, np.complex64)
             pulse[0] = bit*2-1 # set the first value to either a 1 or -1
