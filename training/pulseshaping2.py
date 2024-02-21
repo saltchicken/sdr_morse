@@ -17,19 +17,21 @@ def rrc(symrate, b, f):
 plt.figure(figsize=(10, 8))
 plots = 7
 
-num_symbols = 8
-sps = 16
+num_symbols = 10
+sps = 8
 sample_rate = 1e6
 
 bits = np.random.randint(0, 2, num_symbols) # Our data to be transmitted, 1's and 0's
+print(bits)
 
 x = np.array([])
 for bit in bits:
-    pulse = np.zeros(sps)
+    pulse = np.zeros(sps, np.complex64)
     pulse[0] = bit*2-1 # set the first value to either a 1 or -1
     x = np.concatenate((x, pulse)) # add the 8 samples to the signal
 plt.subplot(plots,1,1)
-plt.plot(x, '.-')
+plt.plot(x.real, '.-')
+plt.plot(x.imag, '.-')
 plt.grid(True)
 # plt.show()
 
@@ -43,7 +45,8 @@ print(len(t))
 h = np.sinc(t/Ts) * np.cos(np.pi*beta*t/Ts) / (1 - (2*beta*t/Ts)**2)
 plt.subplot(plots,1,2)
 # plt.plot(t, h, '.')
-plt.plot(h, '.')
+plt.plot(h.real, '.')
+plt.plot(h.imag, '.')
 plt.grid(True)
 # plt.show()
 
@@ -64,14 +67,14 @@ for i in range(num_symbols):
     plt.plot([i*sps+num_taps//2,i*sps+num_taps//2], [0, x_shaped[i*sps+num_taps//2]])
 plt.grid(True)
 
-plt.subplot(plots,1,5)
-x_shaped_root = np.convolve(x, h_root)
-x_shaped = np.convolve(h_root, x_shaped_root)
+# plt.subplot(plots,1,5)
+# x_shaped_root = np.convolve(x, h_root)
+# x_shaped = np.convolve(h_root, x_shaped_root)
 
-plt.plot(x_shaped, '.-')
-for i in range(num_symbols):
-    plt.plot([i*sps+num_taps//2,i*sps+num_taps//2], [0, x_shaped[i*sps+num_taps//2]])
-plt.grid(True)
+# plt.plot(x_shaped, '.-')
+# for i in range(num_symbols):
+#     plt.plot([i*sps+num_taps//2,i*sps+num_taps//2], [0, x_shaped[i*sps+num_taps//2]])
+# plt.grid(True)
 
 
 plt.subplot(plots,1,6)

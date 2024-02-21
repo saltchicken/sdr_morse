@@ -5,6 +5,7 @@ import time
 from SoapySDR import *
 
 from scipy.signal import butter, lfilter, resample_poly
+from commpy.filters import rrcosfilter
 
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
@@ -77,6 +78,22 @@ class UHD_TX_Streamer:
     
     def send(self, packet: Packet):
         self.streamer.send(packet.data, self.metadata)
+        
+    def generateBPSK(self):
+        bits = np.array([1,0,0,0,1,1,0,0,0,1], np.complex64)
+        num_symbols = len(bits)
+        sps = 8
+        sample_rate = self.sample_rate
+        for bit in bits:
+            pulse = np.zeros(sps, np.complex64)
+            pulse[0] = bit*2-1 # set the first value to either a 1 or -1
+            x = np.concatenate((x, pulse)) # add the 8 samples to the signal
+        beta = 0.35
+        Ts = sps * (1 / sample_rate)
+        rrc_time, rrc = rrcosfilter(50, beta, Ts, sample_rate)
+        transmission = np.convolve(x, rrc)
+        transmission_segment = Segment(transmission, sample_rate)
+        return transmission_segment
     
     def generate_fm_packet(self, binary_string, frequency, second_frequency, duration, sample_rate):
         t = np.arange(0, duration, 1 / sample_rate)
