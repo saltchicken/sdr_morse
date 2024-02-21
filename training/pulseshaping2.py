@@ -3,17 +3,6 @@ import matplotlib.pyplot as plt
 from scipy import signal
 from commpy.filters import rrcosfilter
 
-
-def rrc(symrate, b, f):
-    T = 1.0/symrate
-
-    if f < (1.-b)/(2.0*T):
-        return 1.
-    elif f <= (1+b)/(2.0*T):
-        return np.sqrt(0.5 * (1.0 - np.sin(np.pi * T * (f - 0.5/T)/b)))
-    else:
-        return 0.
-
 plt.figure(figsize=(10, 8))
 plots = 7
 
