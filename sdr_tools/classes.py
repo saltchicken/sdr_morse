@@ -310,9 +310,11 @@ class Receiver:
                 sample = sample * shift_frequency.next()
                 # sample = Filter.low_pass_filter(sample, self.sample_rate, 15000)
                 if np.max(np.abs(sample)) >= threshold:
+                    print("Buffer found signal present")
                     signal.append(sample)
                 else:
                     if len(signal) > 0:
+                        print("Writing signal to captured signals")
                         captured_signals.append(signal)
                         signal = []
         except KeyboardInterrupt:
