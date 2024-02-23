@@ -244,6 +244,31 @@ class Receiver:
         interval = 0  # milliseconds
         ani = FuncAnimation(fig, update_image, interval=interval, blit=True)
         plt.show()
+        
+    def live_samples(self, buffer_size=1024, fft_size=None):
+        if fft_size == None:
+            fft_size = buffer_size
+        line_data = np.zeros((buffer_size, fft_size))
+        fig, ax = plt.subplots()
+        fig.set_size_inches(12, 10)
+        
+        line, = ax.plot(line_data)
+        
+        # Clear the read_buffer of Soapy Device
+        self.set_buffer_size(int(4e6))
+        self.read()
+        # Set to the corrent buffer_size for reading
+        self.set_buffer_size(buffer_size)
+        
+        def update(frame):
+            sample = self.read()
+            line.set_ydata(sample)
+            return line,
+        
+        interval = 0
+        ani = FuncAnimation(fig, update, interval=interval)
+        
+        plt.show()
     
 
         
