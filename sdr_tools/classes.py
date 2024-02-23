@@ -255,7 +255,7 @@ class Receiver:
         ani = FuncAnimation(fig, update_image, interval=interval, blit=True)
         plt.show()
         
-    def live_samples(self, buffer_size=10240, fft_size=None, frequency_shift=540000, decimator=10):
+    def live_samples(self, buffer_size=102400, fft_size=None, frequency_shift=540000, decimator=40):
         if fft_size == None:
             fft_size = buffer_size
         assert buffer_size % decimator == 0, "buffer_size must be equally divisable by decimator"
