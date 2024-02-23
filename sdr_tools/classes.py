@@ -92,9 +92,9 @@ class UHD_TX_Streamer:
     def set_gain(self, gain):
         self.usrp.set_tx_gain(gain)
         
-    def generateBPSK(self):
-        bits = np.array([1,0,0,0,1,1,0,0,0,1,1,1,0,0,1,1], np.complex64)
-        bits = np.tile(bits, 100)
+    def generateBPSK(self, bits):
+        # bits = np.array([1,0,0,0,1,1,0,0,0,1,1,1,0,0,1,1], np.complex64)
+        # bits = np.tile(bits, 100)
         num_symbols = len(bits)
         print("Num symbols: ", num_symbols)
         sps = 8
@@ -102,7 +102,7 @@ class UHD_TX_Streamer:
         x = np.array([])
         for bit in bits:
             pulse = np.zeros(sps, np.complex64)
-            pulse[0] = bit*2-1 # set the first value to either a 1 or -1
+            pulse[0] = int(bit)*2-1 # set the first value to either a 1 or -1
             x = np.concatenate((x, pulse)) # add the 8 samples to the signal
         beta = 0.35
         Ts = sps * (1 / sample_rate)
