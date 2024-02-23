@@ -283,7 +283,7 @@ class Receiver:
         def update(frame):
             sample = self.read()
             sample = sample * shift_frequency.next()
-            sample = Filter.low_pass_filter(sample, self.sample_rate, 10000)
+            sample = Filter.low_pass_filter(sample, self.sample_rate, 15000)
             sample = sample[::decimator]
             
             # sample = Filter.low_pass_filter(sample, self.sample_rate//decimator, 10000)
