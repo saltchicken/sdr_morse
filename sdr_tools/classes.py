@@ -302,16 +302,22 @@ class Receiver:
         
         self.set_buffer_size(buffer_size)
         shift_frequency = ShiftFrequency(self.sample_rate, frequency_shift, buffer_size)
+        signal = []
+        captured_signals = []
         try:
             while True:
                 sample = self.read()
                 sample = sample * shift_frequency.next()
-                sample = Filter.low_pass_filter(sample, self.sample_rate, 15000)
+                # sample = Filter.low_pass_filter(sample, self.sample_rate, 15000)
                 if np.max(np.abs(sample)) >= threshold:
-                    print("Found signal")
-                
+                    signal.append(sample)
+                else:
+                    if len(signal) > 0:
+                        captured_signals.append(signal)
+                        signal = []
         except KeyboardInterrupt:
             print("Exiting capture signal")
+            return captured_signals
         
     
 
