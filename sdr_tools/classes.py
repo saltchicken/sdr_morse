@@ -261,8 +261,11 @@ class Receiver:
         # Set to the corrent buffer_size for reading
         self.set_buffer_size(buffer_size)
         
+        wave_gen = cos_wave_generator(self.sample_rate, -540000, buffer_size)
+        
         def update(frame):
             sample = self.read()
+            sample = sample * next(wave_gen)
             line.set_ydata(sample)
             return line,
         
