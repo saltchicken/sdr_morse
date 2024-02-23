@@ -276,13 +276,16 @@ class Receiver:
         # Set to the corrent buffer_size for reading
         self.set_buffer_size(buffer_size)
         
-        shift_frequency = ShiftFrequency(self.sample_rate, frequency_shift, buffer_size//decimator)
+        # shift_frequency = ShiftFrequency(self.sample_rate, frequency_shift, buffer_size//decimator)
+        shift_frequency = ShiftFrequency(self.sample_rate, frequency_shift, buffer_size)
+        
         
         def update(frame):
             sample = self.read()
+            sample = sample * shift_frequency.next()
             sample = Filter.low_pass_filter(sample, self.sample_rate, 10000)
             sample = sample[::decimator]
-            sample = sample * shift_frequency.next()
+            
             # sample = Filter.low_pass_filter(sample, self.sample_rate//decimator, 10000)
             line.set_ydata(sample)
             return line,
