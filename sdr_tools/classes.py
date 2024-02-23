@@ -262,6 +262,7 @@ class Receiver:
         if fft_size == None:
             fft_size = buffer_size
         assert buffer_size % decimator == 0, "buffer_size must be equally divisable by decimator"
+        assert self.sample_rate % decimator == 0, "sample_rate must be equally divisable by decimator"
         line_data = np.zeros(buffer_size//decimator)
         fig, ax = plt.subplots()
         fig.set_size_inches(12, 10)
@@ -281,7 +282,7 @@ class Receiver:
             sample = self.read()
             sample = sample[::decimator]
             sample = sample * shift_frequency.next()
-            sample = Filter.low_pass_filter(sample, self.sample_rate, 10000)
+            sample = Filter.low_pass_filter(sample, self.sample_rate//decimator, 10000)
             line.set_ydata(sample)
             return line,
         
