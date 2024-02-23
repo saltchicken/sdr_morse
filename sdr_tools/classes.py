@@ -12,7 +12,7 @@ from matplotlib.animation import FuncAnimation
 plt.style.use('dark_background')
 
 
-def cos_wave_generator(self, sample_rate, frequency, samples):
+def cos_wave_generator(sample_rate, frequency, samples):
         i = 0
         while True:
             t = (np.arange(samples) + i * samples) / sample_rate
