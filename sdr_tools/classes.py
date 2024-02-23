@@ -248,11 +248,11 @@ class Receiver:
     def live_samples(self, buffer_size=1024, fft_size=None):
         if fft_size == None:
             fft_size = buffer_size
-        line_data = np.zeros((buffer_size, fft_size))
+        line_data = np.zeros(buffer_size)
         fig, ax = plt.subplots()
         fig.set_size_inches(12, 10)
         
-        x_data = np.linspace(0,buffer_size, 1)
+        x_data = np.arange(1, 1025)
         line, = ax.plot(x_data, line_data)
         
         # Clear the read_buffer of Soapy Device
