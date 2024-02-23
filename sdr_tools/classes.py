@@ -301,11 +301,11 @@ class QuadDemodSegment(Segment):
 class Filter(Segment):
     def __init__(self, segment: Segment):
         super().__init__(segment.data, segment.sample_rate)
-        self.data = self.low_pass_filter(self.data, 10000)
+        self.data = self.low_pass_filter(self.data, self.sample_rate, 10000)
     
     @staticmethod    
-    def low_pass_filter(data, cutoff_frequency, filter_order=5):
-        nyquist_frequency = self.sample_rate / 2
+    def low_pass_filter(data, sample_rate, cutoff_frequency, filter_order=5):
+        nyquist_frequency = sample_rate / 2
         normalized_cutoff_frequency = cutoff_frequency / nyquist_frequency
         b, a = butter(filter_order, normalized_cutoff_frequency, btype='low')
         filtered = lfilter(b, a, data)
