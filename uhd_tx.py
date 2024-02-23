@@ -12,8 +12,8 @@ if __name__ == "__main__":
     freq_deviation = 10000
     duration = 0.5
 
-    # transmission_signal = streamer.generate_fm_packet('10100010', freq - freq_deviation, freq + freq_deviation, duration, sample_rate)
-    transmission_signal = streamer.generateBPSK()
+    fm_packet = streamer.generate_fm_packet('10100010', freq - freq_deviation, freq + freq_deviation, duration, sample_rate)
+    bpsk = streamer.generateBPSK()
 
     # streamer.send(transmission_signal)
     
