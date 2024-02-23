@@ -12,6 +12,13 @@ from matplotlib.animation import FuncAnimation
 plt.style.use('dark_background')
 
 
+def cos_wave_generator(self, sample_rate, frequency, samples):
+        i = 0
+        while True:
+            t = (np.arange(samples) + i * samples) / sample_rate
+            yield np.exp(1j * 2 * np.pi * frequency * t).astype(np.complex64)
+            i += 1
+
 # TODO: More intuitive way for calling buffer_size
 class Segment:
     def __init__(self, data, sample_rate):
@@ -41,17 +48,10 @@ class Segment:
         plt.colorbar(label='Amplitude')
         if not subplot:
             plt.show()
-        
-    def cos_wave_generator(self, sample_rate, frequency, samples):
-        i = 0
-        while True:
-            t = (np.arange(samples) + i * samples) / sample_rate
-            yield np.exp(1j * 2 * np.pi * frequency * t).astype(np.complex64)
-            i += 1
     
     # TODO: There may be an issue with calling this multiple times
     def shift_center(self, frequency):
-        wave_gen = self.cos_wave_generator(self.sample_rate, -frequency, len(self.data))
+        wave_gen = cos_wave_generator(self.sample_rate, -frequency, len(self.data))
         self.data = self.data * next(wave_gen)
     
     def plot(self):
