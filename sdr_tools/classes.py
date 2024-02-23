@@ -304,7 +304,7 @@ class Filter(Segment):
         self.data = self.low_pass_filter(self.data, 10000)
     
     @staticmethod    
-    def low_pass_filter(self, data, cutoff_frequency, filter_order=5):
+    def low_pass_filter(data, cutoff_frequency, filter_order=5):
         nyquist_frequency = self.sample_rate / 2
         normalized_cutoff_frequency = cutoff_frequency / nyquist_frequency
         b, a = butter(filter_order, normalized_cutoff_frequency, btype='low')
