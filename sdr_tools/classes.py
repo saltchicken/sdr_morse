@@ -28,7 +28,8 @@ class ShiftFrequency():
     def next(self):
         t = (np.arange(self.num_samps) + self.i * self.num_samps) / self.sample_rate
         self.i += 1
-        return np.exp(1j * 2 * np.pi * self.frequency * t, np.complex64)
+        shifter = np.exp(1j * 2 * np.pi * self.frequency * t, np.complex64)
+        return shifter
     def reset(self):
         self.i = 0
     def set_frequency(self, frequency):
