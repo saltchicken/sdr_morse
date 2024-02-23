@@ -19,6 +19,24 @@ def cos_wave_generator(sample_rate, frequency, samples):
             yield np.exp(1j * 2 * np.pi * frequency * t).astype(np.complex64)
             i += 1
 
+class ShiftFrequency():
+    def __init__(self, sample_rate, frequency, num_samps):
+        self.i = 0
+        self.frequency = frequency
+        self.sample_rate = sample_rate
+        self.num_samps = num_samps
+    def next(self):
+        t = (np.arange(self.num_samps) + self.i * self.num_samps) / self.sample_rate
+        self.i += 1
+        return np.exp(1j * 2 * np.pi * self.frequency * t, np.complex64)
+    def reset(self):
+        self.i = 0
+    def set_frequency(self, frequency):
+        self.frequency = frequency
+        self.reset()
+
+
+
 # TODO: More intuitive way for calling buffer_size
 class Segment:
     def __init__(self, data, sample_rate):
@@ -51,8 +69,9 @@ class Segment:
     
     # TODO: There may be an issue with calling this multiple times
     def shift_center(self, frequency):
-        wave_gen = cos_wave_generator(self.sample_rate, -frequency, len(self.data))
-        self.data = self.data * next(wave_gen)
+        # wave_gen = cos_wave_generator(self.sample_rate, -frequency, len(self.data))
+        wave_gen = ShiftFrequency(self.sample_rate, -frequency, len(self.data))
+        self.data = self.data * wave_gen.next()
     
     def plot(self):
         plt.plot(self.data)
