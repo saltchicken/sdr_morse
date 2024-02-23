@@ -255,14 +255,15 @@ class Receiver:
         ani = FuncAnimation(fig, update_image, interval=interval, blit=True)
         plt.show()
         
-    def live_samples(self, buffer_size=1024, fft_size=None, frequency_shift=540000):
+    def live_samples(self, buffer_size=10240, fft_size=None, frequency_shift=540000, decimator=10):
         if fft_size == None:
             fft_size = buffer_size
-        line_data = np.zeros(buffer_size)
+        assert buffer_size % decimator == 0, "buffer_size must be equally divisable by decimator"
+        line_data = np.zeros(buffer_size//decimator)
         fig, ax = plt.subplots()
         fig.set_size_inches(12, 10)
         
-        x_data = np.arange(1, buffer_size+1)
+        x_data = np.arange(1, buffer_size+1)[::decimator]
         line, = ax.plot(x_data, line_data)
         
         # Clear the read_buffer of Soapy Device
@@ -271,10 +272,11 @@ class Receiver:
         # Set to the corrent buffer_size for reading
         self.set_buffer_size(buffer_size)
         
-        shift_frequency = ShiftFrequency(self.sample_rate, frequency_shift, buffer_size)
+        shift_frequency = ShiftFrequency(self.sample_rate, frequency_shift, buffer_size//decimator)
         
         def update(frame):
             sample = self.read()
+            sample = sample[::decimator]
             sample = sample * shift_frequency.next()
             line.set_ydata(sample)
             return line,
