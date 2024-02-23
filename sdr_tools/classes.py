@@ -89,6 +89,9 @@ class UHD_TX_Streamer:
     def send(self, packet: Packet):
         self.streamer.send(packet.data, self.metadata)
         
+    def set_gain(self, gain):
+        self.usrp.set_tx_gain(gain)
+        
     def generateBPSK(self):
         bits = np.array([1,0,0,0,1,1,0,0,0,1,1,1,0,0,1,1], np.complex64)
         bits = np.tile(bits, 100)
