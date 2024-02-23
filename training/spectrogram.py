@@ -25,3 +25,11 @@ plt.pcolormesh(t, f, Sxx, shading='gouraud')
 plt.ylabel('Frequency [Hz]')
 plt.xlabel('Time [sec]')
 plt.show()
+
+# If signal is not one sided
+
+# f, t, Sxx = signal.spectrogram(x, fs, return_onesided=False)
+# plt.pcolormesh(t, fftshift(f), fftshift(Sxx, axes=0), shading='gouraud')
+# plt.ylabel('Frequency [Hz]')
+# plt.xlabel('Time [sec]')
+# plt.show()
