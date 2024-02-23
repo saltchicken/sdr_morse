@@ -60,7 +60,7 @@ class Segment:
     # TODO: There may be an issue with calling this multiple times
     def shift_center(self, frequency):
         # wave_gen = cos_wave_generator(self.sample_rate, -frequency, len(self.data))
-        wave_gen = ShiftFrequency(self.sample_rate, -frequency, len(self.data))
+        wave_gen = ShiftFrequency(self.sample_rate, frequency, len(self.data))
         self.data = self.data * wave_gen.next()
     
     def plot(self):
@@ -255,7 +255,7 @@ class Receiver:
         ani = FuncAnimation(fig, update_image, interval=interval, blit=True)
         plt.show()
         
-    def live_samples(self, buffer_size=1024, fft_size=None):
+    def live_samples(self, buffer_size=1024, fft_size=None, frequency_shift=540000):
         if fft_size == None:
             fft_size = buffer_size
         line_data = np.zeros(buffer_size)
@@ -271,7 +271,7 @@ class Receiver:
         # Set to the corrent buffer_size for reading
         self.set_buffer_size(buffer_size)
         
-        shift_frequency = ShiftFrequency(self.sample_rate, -540000, buffer_size)
+        shift_frequency = ShiftFrequency(self.sample_rate, frequency_shift, buffer_size)
         
         def update(frame):
             sample = self.read()
