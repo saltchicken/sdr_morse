@@ -63,13 +63,14 @@ class Packet(Segment):
         super().__init__(segment.data, segment.sample_rate)
         
 class UHD_TX_Streamer:
-    def __init__(self, sample_rate, center_freq):
+    def __init__(self, sample_rate, center_freq, gain=0):
         self.sample_rate = sample_rate
         self.center_freq = center_freq
         self.usrp = uhd.usrp.MultiUSRP()
         self.stream_args = uhd.usrp.StreamArgs("fc32", "sc16")
         self.usrp.set_tx_rate(self.sample_rate)
         self.usrp.set_tx_freq(self.center_freq)
+        self.usrp.set_tx_gain(gain)
         self.streamer = self.usrp.get_tx_stream(self.stream_args)
         self.metadata = uhd.types.TXMetadata()
         # INIT_DELAY = 0.05
