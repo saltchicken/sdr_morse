@@ -281,6 +281,7 @@ class Receiver:
             sample = self.read()
             sample = sample[::decimator]
             sample = sample * shift_frequency.next()
+            sample = Filter.low_pass_filter(sample, self.sample_rate, 10000)
             line.set_ydata(sample)
             return line,
         
