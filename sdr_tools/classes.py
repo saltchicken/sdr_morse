@@ -294,6 +294,24 @@ class Receiver:
         ani = FuncAnimation(fig, update, interval=interval)
         
         plt.show()
+        
+    def capture_signal(self, threshold=0.005, buffer_size=102400, frequency_shift=540000):
+        # Clear the read_buffer of Soapy Device
+        self.set_buffer_size(int(4e6))
+        self.read()
+        
+        self.set_buffer_size(buffer_size)
+        shift_frequency = ShiftFrequency(self.sample_rate, frequency_shift, buffer_size)
+        try:
+            while True:
+                sample = self.read()
+                sample = sample * shift_frequency.next()
+                if np.max(np.abs(sample)) >= threshold:
+                    print("Found signal")
+                
+        except KeyboardInterrupt:
+            print("Exiting capture signal")
+        
     
 
         
