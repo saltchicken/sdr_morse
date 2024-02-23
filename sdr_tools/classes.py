@@ -252,7 +252,8 @@ class Receiver:
         fig, ax = plt.subplots()
         fig.set_size_inches(12, 10)
         
-        line, = ax.plot(line_data)
+        x_data = np.linspace(0,buffer_size, 1)
+        line, = ax.plot(x_data, line_data)
         
         # Clear the read_buffer of Soapy Device
         self.set_buffer_size(int(4e6))
