@@ -315,14 +315,11 @@ class Receiver:
                 else:
                     if len(signal) > 0:
                         print("Writing signal to captured signals")
-                        captured_signals.append(signal)
+                        captured_signals.append(np.concatenate(signal))
                         signal = []
         except KeyboardInterrupt:
             print("Exiting capture signal")
             return captured_signals
-        
-    
-
         
 class QuadDemodSegment(Segment):
     def __init__(self, segment):
