@@ -14,7 +14,7 @@ plt.style.use('dark_background')
 class ShiftFrequency():
     def __init__(self, sample_rate, frequency, num_samps):
         self.i = 0
-        self.frequency = frequency
+        self.frequency = -frequency
         self.sample_rate = sample_rate
         self.num_samps = num_samps
     def next(self):
