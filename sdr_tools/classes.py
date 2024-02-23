@@ -11,14 +11,6 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 plt.style.use('dark_background')
 
-
-def cos_wave_generator(sample_rate, frequency, samples):
-        i = 0
-        while True:
-            t = (np.arange(samples) + i * samples) / sample_rate
-            yield np.exp(1j * 2 * np.pi * frequency * t).astype(np.complex64)
-            i += 1
-
 class ShiftFrequency():
     def __init__(self, sample_rate, frequency, num_samps):
         self.i = 0
@@ -34,8 +26,6 @@ class ShiftFrequency():
     def set_frequency(self, frequency):
         self.frequency = frequency
         self.reset()
-
-
 
 # TODO: More intuitive way for calling buffer_size
 class Segment:
@@ -281,11 +271,11 @@ class Receiver:
         # Set to the corrent buffer_size for reading
         self.set_buffer_size(buffer_size)
         
-        wave_gen = cos_wave_generator(self.sample_rate, -540000, buffer_size)
+        shift_frequency = ShiftFrequency(self.sample_rate, -540000, buffer_size)
         
         def update(frame):
             sample = self.read()
-            sample = sample * next(wave_gen)
+            sample = sample * shift_frequency.next()
             line.set_ydata(sample)
             return line,
         
