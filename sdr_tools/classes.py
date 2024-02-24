@@ -260,7 +260,7 @@ class Receiver:
         ani = FuncAnimation(fig, update_image, interval=interval, blit=True)
         plt.show()
         
-    def live_samples(self, buffer_size=102400, fft_size=None, frequency_shift=540000, decimator=40):
+    def live_samples(self, buffer_size=102400, fft_size=None, frequency_shift=40000, decimator=40):
         if fft_size == None:
             fft_size = buffer_size
         assert buffer_size % decimator == 0, "buffer_size must be equally divisable by decimator"
@@ -297,7 +297,7 @@ class Receiver:
         
         plt.show()
         
-    def capture_signal(self, threshold=0.005, buffer_size=1024, frequency_shift=540000, continuous=False):
+    def capture_signal(self, threshold=0.005, buffer_size=1024, frequency_shift=40000, continuous=False):
         # Clear the read_buffer of Soapy Device
         self.set_buffer_size(int(4e6))
         self.read()
