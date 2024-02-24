@@ -4,7 +4,7 @@ from sdr_tools import utils
 from IPython import embed
 
 if __name__ == "__main__":  
-    sample_rate = 1e6
+    sample_rate = 2e6
     center_freq = 434e6
     streamer = classes.UHD_TX_Streamer(sample_rate, center_freq)
     
