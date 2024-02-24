@@ -295,7 +295,7 @@ class Receiver:
         
         plt.show()
         
-    def capture_signal(self, threshold=0.005, buffer_size=1024, frequency_shift=540000):
+    def capture_signal(self, threshold=0.005, buffer_size=1024, frequency_shift=540000, continuous=False):
         # Clear the read_buffer of Soapy Device
         self.set_buffer_size(int(4e6))
         self.read()
@@ -316,10 +316,14 @@ class Receiver:
                     if len(signal) > 0:
                         print("Writing signal to captured signals")
                         captured_signals.append(Segment(np.concatenate(signal), self.sample_rate))
+                        if not continuous:
+                            break
                         signal = []
         except KeyboardInterrupt:
             print("Exiting capture signal")
-            return captured_signals
+        
+        print('Returning captured signals')
+        return captured_signals
         
     def capture_signal_decode(self, symbol_length=125000):
         received = self.capture_signal()[0]
