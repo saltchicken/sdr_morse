@@ -321,6 +321,11 @@ class Receiver:
             print("Exiting capture signal")
             return captured_signals
         
+    def capture_signal_decode(self):
+        received = self.capture_signal()[0]
+        decoded = DecodedSegment(received)
+        return decoded
+        
 class QuadDemodSegment(Segment):
     def __init__(self, segment):
         super().__init__(segment.data, segment.sample_rate)
@@ -377,7 +382,4 @@ class DecodedSegment(Segment):
         plt.show()
         
     def decode(self, segment:Segment):
-        return (np.real(segment.data) < 0).astype(int) # Why is real needed
-        
-    
-    
+        return (np.real(segment.data) < 0).astype(int) # Why is real needed        
