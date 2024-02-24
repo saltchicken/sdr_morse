@@ -295,7 +295,7 @@ class Receiver:
         
         plt.show()
         
-    def capture_signal(self, threshold=0.005, buffer_size=102400, frequency_shift=540000):
+    def capture_signal(self, threshold=0.005, buffer_size=1024, frequency_shift=540000):
         # Clear the read_buffer of Soapy Device
         self.set_buffer_size(int(4e6))
         self.read()
