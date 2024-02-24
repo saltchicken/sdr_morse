@@ -352,7 +352,7 @@ class Resample(Segment):
         # return sample[::downsample_rate] Alternative
         
 class DecodedSegment(Segment):
-    def __init__(self, segment: Segment):
+    def __init__(self, segment: Segment, resample=125000):
         super().__init__(segment.data, segment.sample_rate)
         
         plt.figure(figsize=(10, 8))
@@ -370,7 +370,7 @@ class DecodedSegment(Segment):
         plt.plot(self.demod.data)
         
         plt.subplot(2, 2, 4)
-        self.resample = Resample(self.demod, 1, 128000)
+        self.resample = Resample(self.demod, 1, resample)
         plt.plot(self.resample.data)
         print(self.decode(self.resample))
         plt.show()
