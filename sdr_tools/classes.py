@@ -315,7 +315,7 @@ class Receiver:
                 else:
                     if len(signal) > 0:
                         print("Writing signal to captured signals")
-                        captured_signals.append(np.concatenate(signal))
+                        captured_signals.append(Segment(np.concatenate(signal), self.sample_rate))
                         signal = []
         except KeyboardInterrupt:
             print("Exiting capture signal")
