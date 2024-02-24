@@ -1,4 +1,4 @@
-from sdr_tools import UHD_TX_Streamer
+from sdr_tools.classes import UHD_TX_Streamer
 
 from IPython import embed
 
