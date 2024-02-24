@@ -111,15 +111,15 @@ class UHD_TX_Streamer:
         transmission_segment = Segment(transmission, sample_rate)
         return transmission_segment
     
-    def generate_fm_packet(self, binary_string, frequency, second_frequency, duration, sample_rate):
-        t = np.arange(0, duration, 1 / sample_rate)
+    def generate_fm_packet(self, binary_string, frequency, second_frequency, duration):
+        t = np.arange(0, duration, 1 / self.sample_rate)
         num_symbols = len(binary_string)
         symbol_length = len(t) / num_symbols
         assert int(symbol_length) == symbol_length, "Sample amount of t must be divisible by num_symbols"
         symbol_length = int(symbol_length)
         print("Num symbols: ", num_symbols, "|", "Symbol length: ", symbol_length)
         transmission_signal = np.zeros(len(t), dtype=np.complex64)
-        time_interval = 1 / sample_rate
+        time_interval = 1 / self.sample_rate
         
         # TODO: Make more efficient. Calc phase shift right after symbol wave. Use 'np.exp()'
         for i, bit in enumerate(binary_string):
@@ -144,7 +144,7 @@ class UHD_TX_Streamer:
                 print("Something is wrong with the binary_string")
             transmission_signal.real[start_index:end_index] = symbol_wave_real[0:symbol_length]
             transmission_signal.imag[start_index:end_index] = symbol_wave_imag[0:symbol_length]
-        transmission_segment = Segment(transmission_signal, sample_rate)
+        transmission_segment = Segment(transmission_signal, self.sample_rate)
         return Packet(transmission_segment)
     
     def burst(self, packet: Packet, times, pause_delay=0):
