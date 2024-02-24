@@ -316,10 +316,10 @@ class Receiver:
         
     def capture_signal_decode(self, symbol_length=125000):
         received = self.capture_signal()[0]
-        decoded = DecodedSegment(received, symbol_length)
+        decoded = Decoded(received, symbol_length)
         return decoded
         
-class QuadDemodSegment(Segment):
+class QuadDemod(Segment):
     def __init__(self, segment):
         super().__init__(segment.data, segment.sample_rate)
         self.data = self.quad_demod(self.data)
@@ -349,7 +349,7 @@ class Resample(Segment):
         return resample_poly(data, interpolation, decimation)#interpolation == upsample, decimation == downsample
         # return sample[::downsample_rate] Alternative
         
-class DecodedSegment(Segment):
+class Decoded(Segment):
     def __init__(self, segment: Segment, symbol_length=125000):
         super().__init__(segment.data, segment.sample_rate)
         self.decode(symbol_length)
@@ -359,7 +359,7 @@ class DecodedSegment(Segment):
         
     def decode(self, symbol_length):
         self.lowpass = Filter(self)
-        self.demod = QuadDemodSegment(self.lowpass)
+        self.demod = QuadDemod(self.lowpass)
         self.demod.data = self.demod.data[symbol_length//2:] # Offset the sample. Poverty synchronization
         self.resample = Resample(self.demod, 1, symbol_length)
         self.decoded = self.decode_segment(self.resample)
