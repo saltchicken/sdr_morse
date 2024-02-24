@@ -190,20 +190,6 @@ class Receiver:
         sr = self.sdr.readStream(self.rxStream, [self.read_buffer], len(self.read_buffer))
         return self.read_buffer
     
-    def timed_read(self, duration):
-        start_time = time.time()
-        received_sample = []
-        while time.time() - start_time < duration:
-            received_sample.append(np.copy(self.read()))
-        return np.concatenate(received_sample)
-
-    def read_chunk(self, num_samps):
-        num_reads = num_samps // len(self.read_buffer)
-        received_sample = []
-        for i in range(num_reads):
-            received_sample.append(np.copy(self.read()))
-        return np.concatenate(received_sample)
-    
     def getSegment(self, num_samps=2048000, buffer_size=1024, center_frequency=None):
         self.set_buffer_size(buffer_size)
         samples = []
