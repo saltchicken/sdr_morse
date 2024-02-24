@@ -321,9 +321,9 @@ class Receiver:
             print("Exiting capture signal")
             return captured_signals
         
-    def capture_signal_decode(self):
+    def capture_signal_decode(self, symbol_length=125000):
         received = self.capture_signal()[0]
-        decoded = DecodedSegment(received)
+        decoded = DecodedSegment(received, symbol_length)
         return decoded
         
 class QuadDemodSegment(Segment):
@@ -357,18 +357,18 @@ class Resample(Segment):
         # return sample[::downsample_rate] Alternative
         
 class DecodedSegment(Segment):
-    def __init__(self, segment: Segment, resample=125000):
+    def __init__(self, segment: Segment, symbol_length=125000):
         super().__init__(segment.data, segment.sample_rate)
-        self.decode(resample)
+        self.decode(symbol_length)
         
     def decode_segment(self, segment:Segment):
         return (np.real(segment.data) < 0).astype(int) # Why is real needed    
         
-    def decode(self, resample):
+    def decode(self, symbol_length):
         self.lowpass = Filter(self)
         self.demod = QuadDemodSegment(self.lowpass)
-        self.demod.data = self.demod.data[resample//2:] # Offset the sample. Poverty synchronization
-        self.resample = Resample(self.demod, 1, resample)
+        self.demod.data = self.demod.data[symbol_length//2:] # Offset the sample. Poverty synchronization
+        self.resample = Resample(self.demod, 1, symbol_length)
         self.decoded = self.decode_segment(self.resample)
         print(self.decoded)
         
