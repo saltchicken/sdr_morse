@@ -1,9 +1,4 @@
-from sdr_tools.classes import Receiver, Segment, QuadDemodSegment, DecodedSegment
-from sdr_tools import utils
-import numpy as np
-
-from scipy.signal import resample_poly, firwin, bilinear, lfilter
-import matplotlib.pyplot as plt
+from sdr_tools.classes import Receiver
 
 from IPython import embed
 
