@@ -367,6 +367,7 @@ class DecodedSegment(Segment):
         
         plt.subplot(2, 2, 3)
         self.demod = QuadDemodSegment(self.lowpass)
+        self.demod.data = self.demod.data[resample//2:] # Offset the sample. Poverty synchronization
         plt.plot(self.demod.data)
         
         plt.subplot(2, 2, 4)
