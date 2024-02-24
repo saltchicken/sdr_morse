@@ -359,27 +359,31 @@ class Resample(Segment):
 class DecodedSegment(Segment):
     def __init__(self, segment: Segment, resample=125000):
         super().__init__(segment.data, segment.sample_rate)
+        self.decode(resample)
         
+    def decode_segment(self, segment:Segment):
+        return (np.real(segment.data) < 0).astype(int) # Why is real needed    
+        
+    def decode(self, resample):
+        self.lowpass = Filter(self)
+        self.demod = QuadDemodSegment(self.lowpass)
+        self.demod.data = self.demod.data[resample//2:] # Offset the sample. Poverty synchronization
+        self.resample = Resample(self.demod, 1, resample)
+        self.decoded = self.decode_segment(self.resample)
+        print(self.decoded)
+        
+    def plot_decoded(self):
         plt.figure(figsize=(10, 8))
+        
         plt.subplot(2, 2, 1)
-        # plt.plot(self.data)
         self.display(subplot=True)
         
         plt.subplot(2, 2, 2)
-        self.lowpass = Filter(self)
-        # plt.plot(self.data)
         self.lowpass.display(subplot=True)
         
         plt.subplot(2, 2, 3)
-        self.demod = QuadDemodSegment(self.lowpass)
-        self.demod.data = self.demod.data[resample//2:] # Offset the sample. Poverty synchronization
         plt.plot(self.demod.data)
         
         plt.subplot(2, 2, 4)
-        self.resample = Resample(self.demod, 1, resample)
         plt.plot(self.resample.data)
-        print(self.decode(self.resample))
-        plt.show()
-        
-    def decode(self, segment:Segment):
-        return (np.real(segment.data) < 0).astype(int) # Why is real needed        
+        plt.show()    
