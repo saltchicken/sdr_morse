@@ -155,7 +155,7 @@ class UHD_TX_Streamer:
             if pause_delay:
                 time.sleep(pause_delay)
    
-        
+# TODO: Add device type to __init__ to allow for different devices other than Lime
 class Receiver:
     def __init__(self, sample_rate, frequency, antenna, freq_correction=0, read_buffer_size=1024):
         self.sample_rate = sample_rate
@@ -186,6 +186,7 @@ class Receiver:
     def set_buffer_size(self, buffer_size):
         self.read_buffer = np.zeros(buffer_size, np.complex64)
     
+    # TODO: Add buffer_size as parameter to remove need for set_buffer_size
     def read(self):
         sr = self.sdr.readStream(self.rxStream, [self.read_buffer], len(self.read_buffer))
         return self.read_buffer
