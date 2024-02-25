@@ -10,9 +10,9 @@ if __name__ == "__main__":
     freq = 40000
     freq_deviation = 10000
     # TODO: Use symbol_length instead of duration
-    duration = 0.5
+    symbol_length = 125000
 
-    fm_packet = transmitter.generate_fm_packet('10100010', freq, freq_deviation, duration)
+    fm_packet = transmitter.generate_fm_packet('10100010', freq, freq_deviation, symbol_length)
     # bpsk = transmitter.generateBPSK('10100010')
 
     # streamer.send(transmission_signal)

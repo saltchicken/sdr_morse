@@ -27,7 +27,7 @@ class ShiftFrequency():
         self.frequency = frequency
         self.reset()
 
-# TODO: More intuitive way for calling buffer_size
+# TODO: More intuitive way for calling buffer_size for display
 class Segment:
     def __init__(self, data, sample_rate):
         self.sample_rate = sample_rate
@@ -111,14 +111,12 @@ class UHD_TX_Streamer:
         transmission_segment = Segment(transmission, sample_rate)
         return transmission_segment
     
-    def generate_fm_packet(self, binary_string, carrier_freq, deviation_freq, duration):
+    def generate_fm_packet(self, binary_string, carrier_freq, deviation_freq, symbol_length):
         frequency = carrier_freq - deviation_freq
         second_frequency = carrier_freq + deviation_freq
-        t = np.arange(0, duration, 1 / self.sample_rate)
         num_symbols = len(binary_string)
-        symbol_length = len(t) / num_symbols
-        assert int(symbol_length) == symbol_length, "Sample amount of t must be divisible by num_symbols"
-        symbol_length = int(symbol_length)
+        duration = (num_symbols * symbol_length) / self.sample_rate
+        t = np.arange(0, duration, 1 / self.sample_rate)
         print("Num symbols: ", num_symbols, "|", "Symbol length: ", symbol_length)
         transmission_signal = np.zeros(len(t), dtype=np.complex64)
         time_interval = 1 / self.sample_rate
