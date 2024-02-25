@@ -312,7 +312,7 @@ class Receiver:
         print('Returning captured signals')
         return captured_signals
         
-    def capture_signal_decode(self, symbol_length=125000):
+    def capture_signal_decode(self, symbol_length=10000):
         received = self.capture_signal()[0]
         decoded = Decoded(received, symbol_length)
         return decoded
@@ -348,7 +348,7 @@ class Resample(Segment):
         # return sample[::downsample_rate] Alternative
         
 class Decoded(Segment):
-    def __init__(self, segment: Segment, symbol_length=125000):
+    def __init__(self, segment: Segment, symbol_length=10000):
         super().__init__(segment.data, segment.sample_rate)
         self.decode(symbol_length)
         
