@@ -381,6 +381,8 @@ class UHD_RX(Receiver):
 
         print(len(samples))
         print(samples[0:10])
+    def read():
+        print('read')
          
 class QuadDemod(Segment):
     def __init__(self, segment):
