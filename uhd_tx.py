@@ -1,11 +1,11 @@
-from sdr_tools.classes import UHD_TX_Streamer
+from sdr_tools.classes import UHD_TX
 
 from IPython import embed
 
 if __name__ == "__main__":  
     sample_rate = 2e6
     center_freq = 434e6
-    transmitter = UHD_TX_Streamer(sample_rate, center_freq)
+    transmitter = UHD_TX(sample_rate, center_freq)
     
     freq = 40000
     freq_deviation = 10000

@@ -71,26 +71,11 @@ class Packet(Segment):
     def __init__(self, segment: Segment):
         super().__init__(segment.data, segment.sample_rate)
         
-class UHD_TX_Streamer:
+class Transmitter:
     def __init__(self, sample_rate, center_freq, gain=0):
         self.sample_rate = sample_rate
         self.center_freq = center_freq
-        self.usrp = uhd.usrp.MultiUSRP()
-        self.stream_args = uhd.usrp.StreamArgs("fc32", "sc16")
-        self.usrp.set_tx_rate(self.sample_rate)
-        self.usrp.set_tx_freq(self.center_freq)
-        self.usrp.set_tx_gain(gain)
-        self.streamer = self.usrp.get_tx_stream(self.stream_args)
-        self.metadata = uhd.types.TXMetadata()
-        # INIT_DELAY = 0.05
-        # self.metadata.time_spec = uhd.types.TimeSpec(self.usrp.get_time_now().get_real_secs() + INIT_DELAY)
-        # self.metadata.has_time_spec = bool(self.streamer.get_num_channels())
-    
-    def send(self, packet: Packet):
-        self.streamer.send(packet.data, self.metadata)
-        
-    def set_gain(self, gain):
-        self.usrp.set_tx_gain(gain)
+        self.gain = gain
         
     def generateBPSK(self, bits):
         # bits = np.array([1,0,0,0,1,1,0,0,0,1,1,1,0,0,1,1], np.complex64)
@@ -152,6 +137,31 @@ class UHD_TX_Streamer:
             self.send(packet)
             if pause_delay:
                 time.sleep(pause_delay)
+        
+        
+class UHD_TX(Transmitter):
+    def __init__(self, sample_rate, center_freq, gain=0):
+        super().__init__(sample_rate, center_freq, gain)
+        
+        self.usrp = uhd.usrp.MultiUSRP()
+        self.stream_args = uhd.usrp.StreamArgs("fc32", "sc16")
+        self.usrp.set_tx_rate(self.sample_rate)
+        self.usrp.set_tx_freq(self.center_freq)
+        self.usrp.set_tx_gain(self.gain)
+        self.streamer = self.usrp.get_tx_stream(self.stream_args)
+        self.metadata = uhd.types.TXMetadata()
+        # INIT_DELAY = 0.05
+        # self.metadata.time_spec = uhd.types.TimeSpec(self.usrp.get_time_now().get_real_secs() + INIT_DELAY)
+        # self.metadata.has_time_spec = bool(self.streamer.get_num_channels())
+    
+    def send(self, packet: Packet):
+        self.streamer.send(packet.data, self.metadata)
+        
+    def set_gain(self, gain):
+        self.gain = gain
+        self.usrp.set_tx_gain(self.gain)
+        
+    
    
 # TODO: Add device type to __init__ to allow for different devices other than Lime
 class Receiver:
