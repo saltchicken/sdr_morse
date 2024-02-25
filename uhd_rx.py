@@ -6,5 +6,5 @@ sample_rate = 2e6
 frequency = 434e6
 antenna = 'LNAW'
 
-receiver = UHD_RX(sample_rate, frequency, antenna) 
-embed()
+with UHD_RX(sample_rate, frequency, antenna) as receiver:
+    embed()
