@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 plt.style.use('dark_background')
 
+from abc import ABC, abstractmethod
+
 class ShiftFrequency():
     def __init__(self, sample_rate, frequency, num_samps):
         self.i = 0
@@ -71,11 +73,15 @@ class Packet(Segment):
     def __init__(self, segment: Segment):
         super().__init__(segment.data, segment.sample_rate)
         
-class Transmitter:
+class Transmitter(ABC):
     def __init__(self, sample_rate, center_freq, gain=0):
         self.sample_rate = sample_rate
         self.center_freq = center_freq
         self.gain = gain
+    
+    @abstractmethod
+    def send(self, packet: Packet):
+        pass
         
     def generateBPSK(self, bits):
         # bits = np.array([1,0,0,0,1,1,0,0,0,1,1,1,0,0,1,1], np.complex64)
