@@ -346,43 +346,39 @@ class UHD_RX(Receiver):
     def __init__(self, sample_rate, frequency, antenna, freq_correction=0, read_buffer_size=1024):
         super().__init__(sample_rate, frequency, antenna, freq_correction, read_buffer_size)
         
-        usrp = uhd.usrp.MultiUSRP()
-
-        num_samps = 10000 # number of samples received
-        center_freq = 100e6 # Hz
-        sample_rate = 1e6 # Hz
+    def __enter__(self):
+        self.usrp = uhd.usrp.MultiUSRP()
         gain = 50 # dB
 
-        usrp.set_rx_rate(sample_rate, 0)
-        usrp.set_rx_freq(uhd.libpyuhd.types.tune_request(center_freq), 0)
-        usrp.set_rx_gain(gain, 0)
+        self.usrp.set_rx_rate(self.sample_rate, 0)
+        self.usrp.set_rx_freq(uhd.libpyuhd.types.tune_request(self.frequency), 0)
+        self.usrp.set_rx_gain(gain, 0)
 
         # Set up the stream and receive buffer
         st_args = uhd.usrp.StreamArgs("fc32", "sc16")
         st_args.channels = [0]
-        metadata = uhd.types.RXMetadata()
-        streamer = usrp.get_rx_stream(st_args)
-        recv_buffer = np.zeros((1, 1000), dtype=np.complex64)
+        self.metadata = uhd.types.RXMetadata()
+        self.streamer = self.usrp.get_rx_stream(st_args)
+        # recv_buffer = np.zeros((1, self.read_buffer_size), dtype=np.complex64)
 
         # Start Stream
         stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.start_cont)
         stream_cmd.stream_now = True
-        streamer.issue_stream_cmd(stream_cmd)
-
-        # Receive Samples
-        samples = np.zeros(num_samps, dtype=np.complex64)
-        for i in range(num_samps//1000):
-            streamer.recv(recv_buffer, metadata)
-            samples[i*1000:(i+1)*1000] = recv_buffer[0]
-
-        # Stop Stream
+        self.streamer.issue_stream_cmd(stream_cmd)
+        
+        # TODO: Possibly implement this for efficiency if larger buffer needed.
+        # for i in range(num_samps//1000):
+        #     self.streamer.recv(recv_buffer, metadata)
+        #     samples[i*1000:(i+1)*1000] = recv_buffer[0]
+    
+    def __exit__(self, *args, **kwargs):
+        print("Exiting Receiver")
         stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.stop_cont)
-        streamer.issue_stream_cmd(stream_cmd)
-
-        print(len(samples))
-        print(samples[0:10])
-    def read():
-        print('read')
+        self.streamer.issue_stream_cmd(stream_cmd)
+        
+    def read(self):
+        self.streamer.recv(self.read_buffer, self.metadata)
+        return self.read_buffer
          
 class QuadDemod(Segment):
     def __init__(self, segment):
