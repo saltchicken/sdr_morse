@@ -170,7 +170,7 @@ class UHD_TX(Transmitter):
     
    
 # TODO: Add device type to __init__ to allow for different devices other than Lime
-class Receiver:
+class Receiver(ABC):
     def __init__(self, sample_rate, frequency, antenna, freq_correction=0, read_buffer_size=1024):
         self.sample_rate = sample_rate
         self.frequency = frequency
@@ -178,32 +178,13 @@ class Receiver:
         self.freq_correction = freq_correction
         
         self.read_buffer = np.array([0] * read_buffer_size, np.complex64)
-        
-    def __enter__(self):
-        print('Entering Receiver')
-        args = dict(driver="lime")
-        self.sdr = SoapySDR.Device(args)
-        self.sdr.setSampleRate(SOAPY_SDR_RX, 0, self.sample_rate)
-        self.sdr.setFrequency(SOAPY_SDR_RX, 0, self.frequency)
-        self.sdr.setAntenna(SoapySDR.SOAPY_SDR_RX, 0, self.antenna)
-        self.sdr.setFrequencyCorrection(SoapySDR.SOAPY_SDR_RX, 0, self.freq_correction)
-        self.rxStream = self.sdr.setupStream(SOAPY_SDR_RX, SOAPY_SDR_CF32)
-        self.sdr.activateStream(self.rxStream)  # start streaming
-        return self
-        
-    def __exit__(self, *args, **kwargs):
-        print("Exiting receiver")
-        self.sdr.deactivateStream(self.rxStream)  # stop streaming
-        self.sdr.closeStream(self.rxStream)
-        del self.sdr
+    
+    @abstractmethod    
+    def read(self):
+        pass
     
     def set_buffer_size(self, buffer_size):
         self.read_buffer = np.zeros(buffer_size, np.complex64)
-    
-    # TODO: Add buffer_size as parameter to remove need for set_buffer_size
-    def read(self):
-        sr = self.sdr.readStream(self.rxStream, [self.read_buffer], len(self.read_buffer))
-        return self.read_buffer
     
     def getSegment(self, num_samps=2048000, buffer_size=1024, center_frequency=None):
         self.set_buffer_size(buffer_size)
@@ -300,6 +281,7 @@ class Receiver:
         
     def capture_signal(self, threshold=0.005, buffer_size=1024, frequency_shift=40000, continuous=False):
         # Clear the read_buffer of Soapy Device
+        # TODO: This might be a problem when using devices other than LimeSDR
         self.set_buffer_size(int(4e6))
         self.read()
         
@@ -332,7 +314,34 @@ class Receiver:
         received = self.capture_signal()[0]
         decoded = Decoded(received, symbol_length)
         return decoded
+   
+class Lime_RX(Receiver):
+    def __init__(self, sample_rate, frequency, antenna, freq_correction=0, read_buffer_size=1024):
+        super().__init__(sample_rate, frequency, antenna, freq_correction, read_buffer_size)
+    
+    def __enter__(self):
+        print('Entering Receiver')
+        args = dict(driver="lime")
+        self.sdr = SoapySDR.Device(args)
+        self.sdr.setSampleRate(SOAPY_SDR_RX, 0, self.sample_rate)
+        self.sdr.setFrequency(SOAPY_SDR_RX, 0, self.frequency)
+        self.sdr.setAntenna(SoapySDR.SOAPY_SDR_RX, 0, self.antenna)
+        self.sdr.setFrequencyCorrection(SoapySDR.SOAPY_SDR_RX, 0, self.freq_correction)
+        self.rxStream = self.sdr.setupStream(SOAPY_SDR_RX, SOAPY_SDR_CF32)
+        self.sdr.activateStream(self.rxStream)  # start streaming
+        return self
         
+    def __exit__(self, *args, **kwargs):
+        print("Exiting receiver")
+        self.sdr.deactivateStream(self.rxStream)  # stop streaming
+        self.sdr.closeStream(self.rxStream)
+        del self.sdr
+        
+    # TODO: Add buffer_size as parameter to remove need for set_buffer_size
+    def read(self):
+        sr = self.sdr.readStream(self.rxStream, [self.read_buffer], len(self.read_buffer))
+        return self.read_buffer
+         
 class QuadDemod(Segment):
     def __init__(self, segment):
         super().__init__(segment.data, segment.sample_rate)
