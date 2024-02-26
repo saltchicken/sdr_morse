@@ -182,11 +182,12 @@ class Lime_TX(Transmitter):
         self.sdr.activateStream(self.txStream)
         
     def send(self, packet: Packet):
-        self.sdr.writeStream(SOAPY_SDR_TX, [packet.data], len(packet.data), timeoutUs=int(1e6))
+        # self.sdr.writeStream(SOAPY_SDR_TX, [packet.data], len(packet.data), timeoutUs=int(1e6))
+        self.sdr.writeStream(self.txStream, [packet.data], packet.data.size, timeoutUs=1000000)
         
     def close(self):
-        self.sdr.deactivateStream(SOAPY_SDR_TX, 0)
-        self.sdr.closeStream(SOAPY_SDR_TX, 0)
+        self.sdr.deactivateStream(self.txStream)
+        self.sdr.closeStream(self.txStream)
         
    
 # TODO: Add device type to __init__ to allow for different devices other than Lime
