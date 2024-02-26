@@ -74,12 +74,12 @@ class Packet(Segment):
         super().__init__(segment.data, segment.sample_rate)
         
 class Transmitter(ABC):
-    def __init__(self, sample_rate, center_freq, gain=0):
+    def __init__(self, sample_rate, center_freq, tx_antenna, tx_gain=20):
         self.sample_rate = sample_rate
         self.center_freq = center_freq
-        self.gain = gain
-        # TODO: Fix the inheritence of self.tx_antenna in Lime_TX
-        self.tx_antenna = 'BAND2'
+        self.tx_antenna = tx_antenna
+        self.tx_gain = tx_gain
+        
     
     @abstractmethod
     def send(self, packet: Packet):
@@ -156,6 +156,7 @@ class UHD_TX(Transmitter):
         self.usrp.set_tx_rate(self.sample_rate)
         self.usrp.set_tx_freq(self.center_freq)
         self.usrp.set_tx_gain(self.gain)
+        # TODO: Add antenna selection with self.tx_antenna
         self.streamer = self.usrp.get_tx_stream(self.stream_args)
         self.metadata = uhd.types.TXMetadata()
         # INIT_DELAY = 0.05
@@ -172,10 +173,8 @@ class UHD_TX(Transmitter):
 
 class Lime_TX(Transmitter):
     # TODO: Modify default gain behavior to call set_gain and print debug
-    def __init__(self, sample_rate, center_freq, gain=5, antenna="BAND2"):
-        super().__init__(sample_rate, center_freq, gain)
-        # TODO Add self.antenna to base Transmitter and add to UHD_TX parameters
-        self.tx_antenna = antenna
+    def __init__(self, sample_rate, center_freq, antenna="BAND2", gain=15):
+        super().__init__(sample_rate, center_freq, antenna, gain)
         
     def __enter__(self):
         args = dict(driver="lime")
