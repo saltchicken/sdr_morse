@@ -412,7 +412,13 @@ class UHD_RX(Receiver):
     def read(self):
         self.streamer.recv(self.read_buffer, self.metadata)
         return self.read_buffer
-         
+ 
+class Soapy_RX_TX(Lime_RX, Lime_TX):
+    def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna):
+        super().__init__(sample_rate, rx_freq, rx_antenna)
+        super(Lime_RX, self).__init__(sample_rate, tx_freq)
+            
+        
 class QuadDemod(Segment):
     def __init__(self, segment):
         super().__init__(segment.data, segment.sample_rate)
