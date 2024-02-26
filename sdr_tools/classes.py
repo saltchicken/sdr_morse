@@ -167,7 +167,25 @@ class UHD_TX(Transmitter):
         self.gain = gain
         self.usrp.set_tx_gain(self.gain)
         
-    
+
+class Lime_TX(Transmitter):
+    def __init__(self, sample_rate, center_freq, gain=0, antenna="BAND2"):
+        super().__init__(sample_rate, center_freq, gain)
+        
+        args = dict(driver="lime")
+        self.sdr = SoapySDR.Device(args)
+        self.sdr.setSampleRate(SOAPY_SDR_TX, 0, self.sample_rate)
+        self.sdr.setFrequency(SOAPY_SDR_TX, 0, self.center_freq)
+        self.sdr.setAntenna(SOAPY_SDR_TX, 0, antenna)
+        self.sdr.setGain(SOAPY_SDR_TX, 0, self.gain)
+        
+    def send(self, packet: Packet):
+        self.sdr.writeStream(SOAPY_SDR_TX, 0, [packet.data], len(packet.data), timeoutUs=int(1e6))
+        
+    def close(self):
+        self.sdr.deactivateStream(SOAPY_SDR_TX, 0)
+        self.sdr.closeStream(SOAPY_SDR_TX, 0)
+        
    
 # TODO: Add device type to __init__ to allow for different devices other than Lime
 class Receiver(ABC):
@@ -241,7 +259,8 @@ class Receiver(ABC):
         interval = 0  # milliseconds
         ani = FuncAnimation(fig, update_image, interval=interval, blit=True)
         plt.show()
-        
+    
+    # TODO: This does not work for UHD_RX. Look for efficient TODO about iterating the read inside UHD_RX 
     def live_samples(self, buffer_size=102400, fft_size=None, frequency_shift=40000, decimator=40):
         if fft_size == None:
             fft_size = buffer_size
