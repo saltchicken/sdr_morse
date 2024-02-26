@@ -184,6 +184,7 @@ class Lime_TX(Transmitter):
         self.sdr.setGain(SOAPY_SDR_TX, 0, self.gain)
         self.txStream = self.sdr.setupStream(SOAPY_SDR_TX, SOAPY_SDR_CF32)
         self.sdr.activateStream(self.txStream)
+        return self
         
     def __exit__(self, *args, **kwargs):
         self.sdr.deactivateStream(self.txStream)
