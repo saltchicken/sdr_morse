@@ -420,7 +420,8 @@ class Lime_RX_TX(Lime_RX, Lime_TX):
     
     def __enter__(self):
         super().__enter__()
-        super(Lime_TX).__enter__()
+        Lime_TX.__enter__()
+        return self
         
     def __exit__(self):
         super().__exit__()
