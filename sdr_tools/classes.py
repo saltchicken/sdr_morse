@@ -420,11 +420,11 @@ class Lime_RX_TX(Lime_RX, Lime_TX):
     
     def __enter__(self):
         super().__enter__()
-        super(Lime_TX, self).__enter__()
+        super(Lime_TX).__enter__()
         
     def __exit__(self):
-        super().__enter__()
-        super(Lime_TX, self).__enter__()
+        super().__exit__()
+        super(Lime_TX, self).__exit__()
             
         
 class QuadDemod(Segment):
