@@ -178,6 +178,8 @@ class Lime_TX(Transmitter):
         self.sdr.setFrequency(SOAPY_SDR_TX, 0, self.center_freq)
         self.sdr.setAntenna(SOAPY_SDR_TX, 0, antenna)
         self.sdr.setGain(SOAPY_SDR_TX, 0, self.gain)
+        self.txStream = self.sdr.setupStream(SOAPY_SDR_TX, SOAPY_SDR_CF32)
+        self.sdr.activateStream(self.txStream)
         
     def send(self, packet: Packet):
         self.sdr.writeStream(SOAPY_SDR_TX, [packet.data], len(packet.data), timeoutUs=int(1e6))
