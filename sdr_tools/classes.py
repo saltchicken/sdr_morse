@@ -78,6 +78,8 @@ class Transmitter(ABC):
         self.sample_rate = sample_rate
         self.center_freq = center_freq
         self.gain = gain
+        # TODO: Fix the inheritence of self.tx_antenna in Lime_TX
+        self.tx_antenna = 'BAND2'
     
     @abstractmethod
     def send(self, packet: Packet):
