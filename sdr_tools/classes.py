@@ -417,7 +417,7 @@ class UHD_RX(Receiver):
 class Lime_RX_TX(Lime_RX, Lime_TX):
     def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna):
         super().__init__(sample_rate, rx_freq, rx_antenna)
-        super(Lime_TX, self).__init__(sample_rate, tx_freq)
+        super(Lime_TX, self).__init__(sample_rate, tx_freq, tx_antenna)
     
     def __enter__(self):
         Lime_RX.__enter__(self)
