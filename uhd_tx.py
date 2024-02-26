@@ -16,4 +16,5 @@ if __name__ == "__main__":
 
     # streamer.send(transmission_signal)
     
+    transmitter.set_gain(20)
     embed()

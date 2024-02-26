@@ -15,5 +15,5 @@ if __name__ == "__main__":
     # bpsk = transmitter.generateBPSK('10100010')
 
     # streamer.send(transmission_signal)
-    
+    transmitter.set_gain(10)
     embed()
