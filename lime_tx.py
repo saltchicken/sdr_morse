@@ -5,15 +5,15 @@ from IPython import embed
 if __name__ == "__main__":  
     sample_rate = 2e6
     center_freq = 434e6
-    transmitter = Lime_TX(sample_rate, center_freq)
+    with Lime_TX(sample_rate, center_freq) as transmitter:
     
-    freq = 40000
-    freq_deviation = 10000
-    symbol_length = 10000
+        freq = 40000
+        freq_deviation = 10000
+        symbol_length = 10000
 
-    fm_packet = transmitter.generate_fm_packet('10100010', freq, freq_deviation, symbol_length)
-    # bpsk = transmitter.generateBPSK('10100010')
+        fm_packet = transmitter.generate_fm_packet('10100010', freq, freq_deviation, symbol_length)
+        # bpsk = transmitter.generateBPSK('10100010')
 
-    # streamer.send(transmission_signal)
-    transmitter.set_gain(10)
-    embed()
+        # streamer.send(transmission_signal)
+        transmitter.set_gain(10)
+        embed()

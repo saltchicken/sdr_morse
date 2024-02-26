@@ -169,17 +169,26 @@ class UHD_TX(Transmitter):
         
 
 class Lime_TX(Transmitter):
-    def __init__(self, sample_rate, center_freq, gain=0, antenna="BAND2"):
+    # TODO: Modify default gain behavior to call set_gain and print debug
+    def __init__(self, sample_rate, center_freq, gain=5, antenna="BAND2"):
         super().__init__(sample_rate, center_freq, gain)
+        # TODO Add self.antenna to base Transmitter and add to UHD_TX parameters
+        self.antenna = antenna
         
+    def __enter__(self):
         args = dict(driver="lime")
         self.sdr = SoapySDR.Device(args)
         self.sdr.setSampleRate(SOAPY_SDR_TX, 0, self.sample_rate)
         self.sdr.setFrequency(SOAPY_SDR_TX, 0, self.center_freq)
-        self.sdr.setAntenna(SOAPY_SDR_TX, 0, antenna)
+        self.sdr.setAntenna(SOAPY_SDR_TX, 0, self.antenna)
         self.sdr.setGain(SOAPY_SDR_TX, 0, self.gain)
         self.txStream = self.sdr.setupStream(SOAPY_SDR_TX, SOAPY_SDR_CF32)
         self.sdr.activateStream(self.txStream)
+        
+    def __exit__(self, *args, **kwargs):
+        self.sdr.deactivateStream(self.txStream)
+        self.sdr.closeStream(self.txStream)
+        del self.sdr
         
     def send(self, packet: Packet):
         # self.sdr.writeStream(SOAPY_SDR_TX, [packet.data], len(packet.data), timeoutUs=int(1e6))
@@ -187,13 +196,8 @@ class Lime_TX(Transmitter):
         
     def set_gain(self, gain):
         self.gain = gain
-        self.sdr.setGain(SOAPY_SDR_TX, 0, self.gain)
+        self.sdr.setGain(SOAPY_SDR_TX, 0, self.gain)     
         
-    def close(self):
-        self.sdr.deactivateStream(self.txStream)
-        self.sdr.closeStream(self.txStream)
-        
-   
 # TODO: Add device type to __init__ to allow for different devices other than Lime
 class Receiver(ABC):
     def __init__(self, sample_rate, frequency, antenna, freq_correction=0, read_buffer_size=1024):
