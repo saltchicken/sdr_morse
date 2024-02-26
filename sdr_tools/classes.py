@@ -370,6 +370,8 @@ class UHD_RX(Receiver):
         # for i in range(num_samps//1000):
         #     self.streamer.recv(recv_buffer, metadata)
         #     samples[i*1000:(i+1)*1000] = recv_buffer[0]
+        
+        return self
     
     def __exit__(self, *args, **kwargs):
         print("Exiting Receiver")
