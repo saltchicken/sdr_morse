@@ -419,7 +419,7 @@ class Lime_RX_TX(Lime_RX, Lime_TX):
         super(Lime_TX, self).__init__(sample_rate, tx_freq)
     
     def __enter__(self):
-        super().__enter__(self)
+        Lime_RX.__enter__(self)
         Lime_TX.__enter__(self)
         return self
         
