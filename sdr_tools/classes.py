@@ -417,6 +417,14 @@ class Lime_RX_TX(Lime_RX, Lime_TX):
     def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna):
         super().__init__(sample_rate, rx_freq, rx_antenna)
         super(Lime_TX, self).__init__(sample_rate, tx_freq)
+    
+    def __enter__(self):
+        super().__enter__()
+        super(Lime_TX, self).__enter__()
+        
+    def __exit__(self):
+        super().__enter__()
+        super(Lime_TX, self).__enter__()
             
         
 class QuadDemod(Segment):
