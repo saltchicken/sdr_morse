@@ -220,9 +220,11 @@ class Transmitter(ABC):
            self.tx_thread = threading.Thread(target=self.tx_node)
            self.tx_thread.start()
     
-    def tx__node_stop(self):
+    def tx_node_stop(self):
         # TODO: Make sure that tx_node is running
         self.kill_tx.set()
+        self.tx_thread.join()
+        print('TX thread successfully exited')
             
 class Receiver(ABC):
     def __init__(self, sample_rate, frequency, antenna, freq_correction=0, read_buffer_size=1024):
@@ -481,9 +483,9 @@ class UHD_TX(Transmitter):
         # TODO: Add antenna selection with self.tx_antenna
         self.tx_streamer = self.usrp.get_tx_stream(self.stream_args)
         self.tx_metadata = uhd.types.TXMetadata()
-        INIT_DELAY = 0.05
-        self.tx_metadata.time_spec = uhd.types.TimeSpec(self.usrp.get_time_now().get_real_secs() + INIT_DELAY)
-        self.tx_metadata.has_time_spec = bool(self.tx_streamer.get_num_channels())
+        # INIT_DELAY = 0.05
+        # self.tx_metadata.time_spec = uhd.types.TimeSpec(self.usrp.get_time_now().get_real_secs() + INIT_DELAY)
+        # self.tx_metadata.has_time_spec = bool(self.tx_streamer.get_num_channels())
         return self
     
     def __exit__(self, *args, **kwargs):
