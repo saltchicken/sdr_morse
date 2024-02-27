@@ -218,6 +218,7 @@ class Transmitter(ABC):
     
     def tx_node_start(self):
            self.tx_thread = threading.Thread(target=self.tx_node)
+           self.tx_thread.start()
     
     def tx__node_stop(self):
         # TODO: Make sure that tx_node is running
