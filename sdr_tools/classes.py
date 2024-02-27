@@ -29,7 +29,6 @@ class ShiftFrequency():
         self.frequency = frequency
         self.reset()
 
-# TODO: More intuitive way for calling buffer_size for display
 class Segment:
     def __init__(self, data, sample_rate):
         self.sample_rate = sample_rate
@@ -72,7 +71,69 @@ class Segment:
 class Packet(Segment): 
     def __init__(self, segment: Segment):
         super().__init__(segment.data, segment.sample_rate)
+
+class Filter(Segment):
+    def __init__(self, segment: Segment):
+        super().__init__(segment.data, segment.sample_rate)
+        self.data = self.low_pass_filter(self.data, self.sample_rate, 10000)
+    
+    @staticmethod    
+    def low_pass_filter(data, sample_rate, cutoff_frequency, filter_order=5):
+        nyquist_frequency = sample_rate / 2
+        normalized_cutoff_frequency = cutoff_frequency / nyquist_frequency
+        b, a = butter(filter_order, normalized_cutoff_frequency, btype='low')
+        filtered = lfilter(b, a, data)
+        filtered = filtered.astype(np.complex64)
+        assert data.dtype == filtered.dtype, "Output of filtered signal mismatched with sample signal"
+        return filtered
+           
+class QuadDemod(Segment):
+    def __init__(self, segment):
+        super().__init__(segment.data, segment.sample_rate)
+        self.data = self.quad_demod(self.data)
+    def quad_demod(self, segment):
+        return 0.5 * np.angle(segment[:-1] * np.conj(segment[1:]))
+    
+class Resample(Segment):
+    def __init__(self, segment: Segment, interpolation=1, decimation=1):
+        super().__init__(segment.data, segment.sample_rate)
+        self.data = self.resample(self.data, interpolation, decimation)
+    def resample(self, data, interpolation, decimation):
+        return resample_poly(data, interpolation, decimation)#interpolation == upsample, decimation == downsample
+        # return sample[::downsample_rate] Alternative
         
+class Decoded(Segment):
+    def __init__(self, segment: Segment, symbol_length=10000):
+        super().__init__(segment.data, segment.sample_rate)
+        self.decode(symbol_length)
+        
+    def decode_segment(self, segment:Segment):
+        return (np.real(segment.data) < 0).astype(int) # Why is real needed    
+        
+    def decode(self, symbol_length):
+        self.lowpass = Filter(self)
+        self.demod = QuadDemod(self.lowpass)
+        self.demod.data = self.demod.data[symbol_length//2:] # Offset the sample. Poverty synchronization
+        self.resample = Resample(self.demod, 1, symbol_length)
+        self.decoded = self.decode_segment(self.resample)
+        print(self.decoded)
+        
+    def plot_decoded(self):
+        plt.figure(figsize=(10, 8))
+        
+        plt.subplot(2, 2, 1)
+        self.display(subplot=True)
+        
+        plt.subplot(2, 2, 2)
+        self.lowpass.display(subplot=True)
+        
+        plt.subplot(2, 2, 3)
+        plt.plot(self.demod.data)
+        
+        plt.subplot(2, 2, 4)
+        plt.plot(self.resample.data)
+        plt.show()    
+                
 class Transmitter(ABC):
     def __init__(self, sample_rate, center_freq, tx_antenna, tx_gain=20):
         self.sample_rate = sample_rate
@@ -145,67 +206,7 @@ class Transmitter(ABC):
             self.send(packet)
             if pause_delay:
                 time.sleep(pause_delay)
-        
-        
-class UHD_TX(Transmitter):
-    def __init__(self, sample_rate, center_freq, antenna, gain=0):
-        super().__init__(sample_rate, center_freq, antenna, gain)
-        
-    def __enter__(self):
-        self.usrp = uhd.usrp.MultiUSRP()
-        self.stream_args = uhd.usrp.StreamArgs("fc32", "sc16")
-        self.usrp.set_tx_rate(self.sample_rate)
-        self.usrp.set_tx_freq(self.center_freq)
-        self.usrp.set_tx_gain(self.tx_gain)
-        # TODO: Add antenna selection with self.tx_antenna
-        self.tx_streamer = self.usrp.get_tx_stream(self.stream_args)
-        self.metadata = uhd.types.TXMetadata()
-        # INIT_DELAY = 0.05
-        # self.metadata.time_spec = uhd.types.TimeSpec(self.usrp.get_time_now().get_real_secs() + INIT_DELAY)
-        # self.metadata.has_time_spec = bool(self.tx_streamer.get_num_channels())
-        return self
-    
-    def __exit__(self, *args, **kwargs):
-        print("Exiting Receiver")
-    
-    def send(self, packet: Packet):
-        self.tx_streamer.send(packet.data, self.metadata)
-        
-    def set_gain(self, gain):
-        self.gain = gain
-        self.usrp.set_tx_gain(self.gain)
-        
 
-class Lime_TX(Transmitter):
-    # TODO: Modify default gain behavior to call set_gain and print debug
-    def __init__(self, sample_rate, center_freq, antenna="BAND2", gain=15):
-        super().__init__(sample_rate, center_freq, antenna, gain)
-        
-    def __enter__(self):
-        args = dict(driver="lime")
-        self.sdr = SoapySDR.Device(args)
-        self.sdr.setSampleRate(SOAPY_SDR_TX, 0, self.sample_rate)
-        self.sdr.setFrequency(SOAPY_SDR_TX, 0, self.center_freq)
-        self.sdr.setAntenna(SOAPY_SDR_TX, 0, self.tx_antenna)
-        self.sdr.setGain(SOAPY_SDR_TX, 0, self.tx_gain)
-        self.txStream = self.sdr.setupStream(SOAPY_SDR_TX, SOAPY_SDR_CF32)
-        self.sdr.activateStream(self.txStream)
-        return self
-        
-    def __exit__(self, *args, **kwargs):
-        self.sdr.deactivateStream(self.txStream)
-        self.sdr.closeStream(self.txStream)
-        del self.sdr
-        
-    def send(self, packet: Packet):
-        # self.sdr.writeStream(SOAPY_SDR_TX, [packet.data], len(packet.data), timeoutUs=int(1e6))
-        self.sdr.writeStream(self.txStream, [packet.data], packet.data.size, timeoutUs=1000000)
-        
-    def set_gain(self, gain):
-        self.gain = gain
-        self.sdr.setGain(SOAPY_SDR_TX, 0, self.gain)     
-        
-# TODO: Add device type to __init__ to allow for different devices other than Lime
 class Receiver(ABC):
     def __init__(self, sample_rate, frequency, antenna, freq_correction=0, read_buffer_size=1024):
         self.sample_rate = sample_rate
@@ -351,7 +352,7 @@ class Receiver(ABC):
         received = self.capture_signal()[0]
         decoded = Decoded(received, symbol_length)
         return decoded
-   
+
 class Lime_RX(Receiver):
     def __init__(self, sample_rate, frequency, antenna, freq_correction=0, read_buffer_size=1024):
         super().__init__(sample_rate, frequency, antenna, freq_correction, read_buffer_size)
@@ -379,7 +380,7 @@ class Lime_RX(Receiver):
     def read(self):
         sr = self.sdr.readStream(self.rxStream, [self.read_buffer], len(self.read_buffer))
         return self.read_buffer
-    
+
 class UHD_RX(Receiver):
     def __init__(self, sample_rate, frequency, antenna, freq_correction=0, read_buffer_size=1024):
         super().__init__(sample_rate, frequency, antenna, freq_correction, read_buffer_size)
@@ -419,7 +420,65 @@ class UHD_RX(Receiver):
     def read(self):
         self.rx_streamer.recv(self.read_buffer, self.metadata)
         return self.read_buffer
- 
+
+class Lime_TX(Transmitter):
+    # TODO: Modify default gain behavior to call set_gain and print debug
+    def __init__(self, sample_rate, center_freq, antenna="BAND2", gain=15):
+        super().__init__(sample_rate, center_freq, antenna, gain)
+        
+    def __enter__(self):
+        args = dict(driver="lime")
+        self.sdr = SoapySDR.Device(args)
+        self.sdr.setSampleRate(SOAPY_SDR_TX, 0, self.sample_rate)
+        self.sdr.setFrequency(SOAPY_SDR_TX, 0, self.center_freq)
+        self.sdr.setAntenna(SOAPY_SDR_TX, 0, self.tx_antenna)
+        self.sdr.setGain(SOAPY_SDR_TX, 0, self.tx_gain)
+        self.txStream = self.sdr.setupStream(SOAPY_SDR_TX, SOAPY_SDR_CF32)
+        self.sdr.activateStream(self.txStream)
+        return self
+        
+    def __exit__(self, *args, **kwargs):
+        print('Exiting Transmitter')
+        self.sdr.deactivateStream(self.txStream)
+        self.sdr.closeStream(self.txStream)
+        del self.sdr
+        
+    def send(self, packet: Packet):
+        # self.sdr.writeStream(SOAPY_SDR_TX, [packet.data], len(packet.data), timeoutUs=int(1e6))
+        self.sdr.writeStream(self.txStream, [packet.data], packet.data.size, timeoutUs=1000000)
+        
+    def set_gain(self, gain):
+        self.gain = gain
+        self.sdr.setGain(SOAPY_SDR_TX, 0, self.gain)     
+                 
+class UHD_TX(Transmitter):
+    def __init__(self, sample_rate, center_freq, antenna, gain=0):
+        super().__init__(sample_rate, center_freq, antenna, gain)
+        
+    def __enter__(self):
+        self.usrp = uhd.usrp.MultiUSRP()
+        self.stream_args = uhd.usrp.StreamArgs("fc32", "sc16")
+        self.usrp.set_tx_rate(self.sample_rate)
+        self.usrp.set_tx_freq(self.center_freq)
+        self.usrp.set_tx_gain(self.tx_gain)
+        # TODO: Add antenna selection with self.tx_antenna
+        self.tx_streamer = self.usrp.get_tx_stream(self.stream_args)
+        self.metadata = uhd.types.TXMetadata()
+        # INIT_DELAY = 0.05
+        # self.metadata.time_spec = uhd.types.TimeSpec(self.usrp.get_time_now().get_real_secs() + INIT_DELAY)
+        # self.metadata.has_time_spec = bool(self.tx_streamer.get_num_channels())
+        return self
+    
+    def __exit__(self, *args, **kwargs):
+        print("Exiting Transmitter")
+    
+    def send(self, packet: Packet):
+        self.tx_streamer.send(packet.data, self.metadata)
+        
+    def set_gain(self, gain):
+        self.gain = gain
+        self.usrp.set_tx_gain(self.gain)
+
 class Lime_RX_TX(Lime_RX, Lime_TX):
     def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna):
         super().__init__(sample_rate, rx_freq, rx_antenna)
@@ -447,65 +506,3 @@ class UHD_RX_TX(UHD_RX, UHD_TX):
     def __exit__(self, *args, **kwargs):
         UHD_RX.__exit__(self)
         UHD_TX.__exit__(self)
-         
-class QuadDemod(Segment):
-    def __init__(self, segment):
-        super().__init__(segment.data, segment.sample_rate)
-        self.data = self.quad_demod(self.data)
-    def quad_demod(self, segment):
-        return 0.5 * np.angle(segment[:-1] * np.conj(segment[1:]))
-    
-class Filter(Segment):
-    def __init__(self, segment: Segment):
-        super().__init__(segment.data, segment.sample_rate)
-        self.data = self.low_pass_filter(self.data, self.sample_rate, 10000)
-    
-    @staticmethod    
-    def low_pass_filter(data, sample_rate, cutoff_frequency, filter_order=5):
-        nyquist_frequency = sample_rate / 2
-        normalized_cutoff_frequency = cutoff_frequency / nyquist_frequency
-        b, a = butter(filter_order, normalized_cutoff_frequency, btype='low')
-        filtered = lfilter(b, a, data)
-        filtered = filtered.astype(np.complex64)
-        assert data.dtype == filtered.dtype, "Output of filtered signal mismatched with sample signal"
-        return filtered
-    
-class Resample(Segment):
-    def __init__(self, segment: Segment, interpolation=1, decimation=1):
-        super().__init__(segment.data, segment.sample_rate)
-        self.data = self.resample(self.data, interpolation, decimation)
-    def resample(self, data, interpolation, decimation):
-        return resample_poly(data, interpolation, decimation)#interpolation == upsample, decimation == downsample
-        # return sample[::downsample_rate] Alternative
-        
-class Decoded(Segment):
-    def __init__(self, segment: Segment, symbol_length=10000):
-        super().__init__(segment.data, segment.sample_rate)
-        self.decode(symbol_length)
-        
-    def decode_segment(self, segment:Segment):
-        return (np.real(segment.data) < 0).astype(int) # Why is real needed    
-        
-    def decode(self, symbol_length):
-        self.lowpass = Filter(self)
-        self.demod = QuadDemod(self.lowpass)
-        self.demod.data = self.demod.data[symbol_length//2:] # Offset the sample. Poverty synchronization
-        self.resample = Resample(self.demod, 1, symbol_length)
-        self.decoded = self.decode_segment(self.resample)
-        print(self.decoded)
-        
-    def plot_decoded(self):
-        plt.figure(figsize=(10, 8))
-        
-        plt.subplot(2, 2, 1)
-        self.display(subplot=True)
-        
-        plt.subplot(2, 2, 2)
-        self.lowpass.display(subplot=True)
-        
-        plt.subplot(2, 2, 3)
-        plt.plot(self.demod.data)
-        
-        plt.subplot(2, 2, 4)
-        plt.plot(self.resample.data)
-        plt.show()    
