@@ -396,7 +396,7 @@ class UHD_RX(Receiver):
         # Set up the stream and receive buffer
         st_args = uhd.usrp.StreamArgs("fc32", "sc16")
         st_args.channels = [0]
-        self.metadata = uhd.types.RXMetadata()
+        self.rx_metadata = uhd.types.RXMetadata()
         self.rx_streamer = self.usrp.get_rx_stream(st_args)
         # recv_buffer = np.zeros((1, self.read_buffer_size), dtype=np.complex64)
 
@@ -418,7 +418,7 @@ class UHD_RX(Receiver):
         self.rx_streamer.issue_stream_cmd(stream_cmd)
         
     def read(self):
-        self.rx_streamer.recv(self.read_buffer, self.metadata)
+        self.rx_streamer.recv(self.read_buffer, self.rx_metadata)
         return self.read_buffer
 
 class Lime_TX(Transmitter):
@@ -463,17 +463,17 @@ class UHD_TX(Transmitter):
         self.usrp.set_tx_gain(self.tx_gain)
         # TODO: Add antenna selection with self.tx_antenna
         self.tx_streamer = self.usrp.get_tx_stream(self.stream_args)
-        self.metadata = uhd.types.TXMetadata()
+        self.tx_metadata = uhd.types.TXMetadata()
         # INIT_DELAY = 0.05
-        # self.metadata.time_spec = uhd.types.TimeSpec(self.usrp.get_time_now().get_real_secs() + INIT_DELAY)
-        # self.metadata.has_time_spec = bool(self.tx_streamer.get_num_channels())
+        # self.tx_metadata.time_spec = uhd.types.TimeSpec(self.usrp.get_time_now().get_real_secs() + INIT_DELAY)
+        # self.tx_metadata.has_time_spec = bool(self.tx_streamer.get_num_channels())
         return self
     
     def __exit__(self, *args, **kwargs):
         print("Exiting Transmitter")
     
     def send(self, packet: Packet):
-        self.tx_streamer.send(packet.data, self.metadata)
+        self.tx_streamer.send(packet.data, self.tx_metadata)
         
     def set_gain(self, gain):
         self.gain = gain
