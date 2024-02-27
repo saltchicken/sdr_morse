@@ -12,6 +12,7 @@ from matplotlib.animation import FuncAnimation
 plt.style.use('dark_background')
 
 from abc import ABC, abstractmethod
+import threading
 
 class ShiftFrequency():
     def __init__(self, sample_rate, frequency, num_samps):
@@ -141,7 +142,6 @@ class Transmitter(ABC):
         self.tx_antenna = tx_antenna
         self.tx_gain = tx_gain
         
-    
     @abstractmethod
     def send(self, packet: Packet):
         pass
@@ -207,6 +207,22 @@ class Transmitter(ABC):
             if pause_delay:
                 time.sleep(pause_delay)
 
+    def tx_node(self):
+        tx_data = self.generate_fm_packet('10100010', 40000, 10000, 10000)
+        self.kill_tx = threading.Event()
+        print('Starting tx_node')
+        while not self.kill_tx.is_set():
+            self.send(tx_data)
+            time.sleep(1)
+        print('Killing tx_node')
+    
+    def tx_node_start(self):
+           self.tx_thread = threading.Thread(target=self.tx_node)
+    
+    def tx__node_stop(self):
+        # TODO: Make sure that tx_node is running
+        self.kill_tx.set()
+            
 class Receiver(ABC):
     def __init__(self, sample_rate, frequency, antenna, freq_correction=0, read_buffer_size=1024):
         self.sample_rate = sample_rate
