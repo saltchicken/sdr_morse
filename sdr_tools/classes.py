@@ -151,6 +151,9 @@ class UHD_TX(Transmitter):
     def __init__(self, sample_rate, center_freq, gain=0):
         super().__init__(sample_rate, center_freq, gain)
         
+        
+    
+    def __enter__(self):
         self.usrp = uhd.usrp.MultiUSRP()
         self.stream_args = uhd.usrp.StreamArgs("fc32", "sc16")
         self.usrp.set_tx_rate(self.sample_rate)
@@ -162,6 +165,9 @@ class UHD_TX(Transmitter):
         # INIT_DELAY = 0.05
         # self.metadata.time_spec = uhd.types.TimeSpec(self.usrp.get_time_now().get_real_secs() + INIT_DELAY)
         # self.metadata.has_time_spec = bool(self.streamer.get_num_channels())
+    
+    def __exit__(self, *args, **kwargs):
+        print("Exiting Receiver")
     
     def send(self, packet: Packet):
         self.streamer.send(packet.data, self.metadata)
@@ -429,7 +435,7 @@ class Lime_RX_TX(Lime_RX, Lime_TX):
         Lime_RX.__exit__(self, retain_sdr=True)
         Lime_TX.__exit__(self)
             
-        
+      
 class QuadDemod(Segment):
     def __init__(self, segment):
         super().__init__(segment.data, segment.sample_rate)
