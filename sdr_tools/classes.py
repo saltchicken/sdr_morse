@@ -155,7 +155,7 @@ class UHD_TX(Transmitter):
         self.stream_args = uhd.usrp.StreamArgs("fc32", "sc16")
         self.usrp.set_tx_rate(self.sample_rate)
         self.usrp.set_tx_freq(self.center_freq)
-        self.usrp.set_tx_gain(self.gain)
+        self.usrp.set_tx_gain(self.tx_gain)
         # TODO: Add antenna selection with self.tx_antenna
         self.streamer = self.usrp.get_tx_stream(self.stream_args)
         self.metadata = uhd.types.TXMetadata()
