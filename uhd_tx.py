@@ -5,7 +5,8 @@ from IPython import embed
 if __name__ == "__main__":  
     sample_rate = 2e6
     center_freq = 434e6
-    transmitter = UHD_TX(sample_rate, center_freq)
+    antenna = ''
+    transmitter = UHD_TX(sample_rate, center_freq, antenna)
     
     freq = 40000
     freq_deviation = 10000
