@@ -367,7 +367,8 @@ class Lime_RX(Receiver):
         print("Exiting receiver")
         self.sdr.deactivateStream(self.rxStream)  # stop streaming
         self.sdr.closeStream(self.rxStream)
-        del self.sdr
+        if 'retain_sdr' not in kwargs: # Added so that self.sdr is not deleted before objects with multiple inheritence call __exit__. Bit hacky
+            del self.sdr
         
     # TODO: Add buffer_size as parameter to remove need for set_buffer_size
     def read(self):
@@ -425,7 +426,7 @@ class Lime_RX_TX(Lime_RX, Lime_TX):
         return self
         
     def __exit__(self, *args, **kwargs):
-        Lime_RX.__exit__(self)
+        Lime_RX.__exit__(self, retain_sdr=True)
         Lime_TX.__exit__(self)
             
         
