@@ -158,18 +158,18 @@ class UHD_TX(Transmitter):
         self.usrp.set_tx_freq(self.center_freq)
         self.usrp.set_tx_gain(self.tx_gain)
         # TODO: Add antenna selection with self.tx_antenna
-        self.streamer = self.usrp.get_tx_stream(self.stream_args)
+        self.tx_streamer = self.usrp.get_tx_stream(self.stream_args)
         self.metadata = uhd.types.TXMetadata()
         # INIT_DELAY = 0.05
         # self.metadata.time_spec = uhd.types.TimeSpec(self.usrp.get_time_now().get_real_secs() + INIT_DELAY)
-        # self.metadata.has_time_spec = bool(self.streamer.get_num_channels())
+        # self.metadata.has_time_spec = bool(self.tx_streamer.get_num_channels())
         return self
     
     def __exit__(self, *args, **kwargs):
         print("Exiting Receiver")
     
     def send(self, packet: Packet):
-        self.streamer.send(packet.data, self.metadata)
+        self.tx_streamer.send(packet.data, self.metadata)
         
     def set_gain(self, gain):
         self.gain = gain
@@ -396,17 +396,17 @@ class UHD_RX(Receiver):
         st_args = uhd.usrp.StreamArgs("fc32", "sc16")
         st_args.channels = [0]
         self.metadata = uhd.types.RXMetadata()
-        self.streamer = self.usrp.get_rx_stream(st_args)
+        self.rx_streamer = self.usrp.get_rx_stream(st_args)
         # recv_buffer = np.zeros((1, self.read_buffer_size), dtype=np.complex64)
 
         # Start Stream
         stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.start_cont)
         stream_cmd.stream_now = True
-        self.streamer.issue_stream_cmd(stream_cmd)
+        self.rx_streamer.issue_stream_cmd(stream_cmd)
         
         # TODO: Possibly implement this for efficiency if larger buffer needed.
         # for i in range(num_samps//1000):
-        #     self.streamer.recv(recv_buffer, metadata)
+        #     self.rx_streamer.recv(recv_buffer, metadata)
         #     samples[i*1000:(i+1)*1000] = recv_buffer[0]
         
         return self
@@ -414,10 +414,10 @@ class UHD_RX(Receiver):
     def __exit__(self, *args, **kwargs):
         print("Exiting Receiver")
         stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.stop_cont)
-        self.streamer.issue_stream_cmd(stream_cmd)
+        self.rx_streamer.issue_stream_cmd(stream_cmd)
         
     def read(self):
-        self.streamer.recv(self.read_buffer, self.metadata)
+        self.rx_streamer.recv(self.read_buffer, self.metadata)
         return self.read_buffer
  
 class Lime_RX_TX(Lime_RX, Lime_TX):
