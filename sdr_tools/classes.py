@@ -424,7 +424,7 @@ class Lime_RX_TX(Lime_RX, Lime_TX):
         Lime_TX.__enter__(self)
         return self
         
-    def __exit__(self):
+    def __exit__(self, *args, **kwargs):
         super().__exit__()
         super(Lime_TX, self).__exit__()
             
