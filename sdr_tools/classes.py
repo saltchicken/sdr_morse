@@ -425,8 +425,8 @@ class Lime_RX_TX(Lime_RX, Lime_TX):
         return self
         
     def __exit__(self, *args, **kwargs):
-        Lime_RX.__exit__()
-        Lime_TX.__exit__()
+        Lime_RX.__exit__(self)
+        Lime_TX.__exit__(self)
             
         
 class QuadDemod(Segment):
