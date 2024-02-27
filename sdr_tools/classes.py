@@ -148,11 +148,9 @@ class Transmitter(ABC):
         
         
 class UHD_TX(Transmitter):
-    def __init__(self, sample_rate, center_freq, gain=0):
-        super().__init__(sample_rate, center_freq, gain)
+    def __init__(self, sample_rate, center_freq, antenna, gain=0):
+        super().__init__(sample_rate, center_freq, antenna, gain)
         
-        
-    
     def __enter__(self):
         self.usrp = uhd.usrp.MultiUSRP()
         self.stream_args = uhd.usrp.StreamArgs("fc32", "sc16")
@@ -435,7 +433,20 @@ class Lime_RX_TX(Lime_RX, Lime_TX):
         Lime_RX.__exit__(self, retain_sdr=True)
         Lime_TX.__exit__(self)
             
-      
+class UHD_RX_TX(UHD_RX, UHD_TX):
+    def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna):
+        super().__init__(sample_rate, rx_freq, rx_antenna)
+        super(UHD_TX, self).__init__(sample_rate, tx_freq, tx_antenna)
+        
+    def __enter__(self):
+        UHD_RX.__enter__(self)
+        UHD_TX.__enter__(self)
+        return self
+        
+    def __exit__(self, *args, **kwargs):
+        UHD_RX.__exit__(self)
+        UHD_TX.__exit__(self)
+         
 class QuadDemod(Segment):
     def __init__(self, segment):
         super().__init__(segment.data, segment.sample_rate)
