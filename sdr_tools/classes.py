@@ -481,9 +481,9 @@ class UHD_TX(Transmitter):
         # TODO: Add antenna selection with self.tx_antenna
         self.tx_streamer = self.usrp.get_tx_stream(self.stream_args)
         self.tx_metadata = uhd.types.TXMetadata()
-        # INIT_DELAY = 0.05
-        # self.tx_metadata.time_spec = uhd.types.TimeSpec(self.usrp.get_time_now().get_real_secs() + INIT_DELAY)
-        # self.tx_metadata.has_time_spec = bool(self.tx_streamer.get_num_channels())
+        INIT_DELAY = 0.05
+        self.tx_metadata.time_spec = uhd.types.TimeSpec(self.usrp.get_time_now().get_real_secs() + INIT_DELAY)
+        self.tx_metadata.has_time_spec = bool(self.tx_streamer.get_num_channels())
         return self
     
     def __exit__(self, *args, **kwargs):
