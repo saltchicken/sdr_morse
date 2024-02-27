@@ -163,6 +163,7 @@ class UHD_TX(Transmitter):
         # INIT_DELAY = 0.05
         # self.metadata.time_spec = uhd.types.TimeSpec(self.usrp.get_time_now().get_real_secs() + INIT_DELAY)
         # self.metadata.has_time_spec = bool(self.streamer.get_num_channels())
+        return self
     
     def __exit__(self, *args, **kwargs):
         print("Exiting Receiver")
