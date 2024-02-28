@@ -76,21 +76,22 @@ class Packet(Segment):
 class FM_Packet(Packet):
     def __init__(self):
         message = '10100010'
+        sample_rate = 2e6
         freq = 40000
         freq_deviation = 10000
         symbol_length = 10000
-        segment = self.generate_fm_packet(message, freq, freq_deviation, symbol_length)
+        segment = self.generate_fm_packet(message, sample_rate, freq, freq_deviation, symbol_length)
         super().__init__(segment.data, segment.sample_rate)
     
-    def generate_fm_packet(self, binary_string, carrier_freq, deviation_freq, symbol_length):
+    def generate_fm_packet(self, binary_string, sample_rate, carrier_freq, deviation_freq, symbol_length):
         frequency = carrier_freq - deviation_freq
         second_frequency = carrier_freq + deviation_freq
         num_symbols = len(binary_string)
-        duration = (num_symbols * symbol_length) / self.sample_rate
-        t = np.arange(0, duration, 1 / self.sample_rate)
+        duration = (num_symbols * symbol_length) / sample_rate
+        t = np.arange(0, duration, 1 / sample_rate)
         print("Num symbols: ", num_symbols, "|", "Symbol length: ", symbol_length)
         transmission_signal = np.zeros(len(t), dtype=np.complex64)
-        time_interval = 1 / self.sample_rate
+        time_interval = 1 / sample_rate
         
         # TODO: Make more efficient. Calc phase shift right after symbol wave. Use 'np.exp()'
         for i, bit in enumerate(binary_string):
@@ -115,7 +116,7 @@ class FM_Packet(Packet):
                 print("Something is wrong with the binary_string")
             transmission_signal.real[start_index:end_index] = symbol_wave_real[0:symbol_length]
             transmission_signal.imag[start_index:end_index] = symbol_wave_imag[0:symbol_length]
-        transmission_segment = Segment(transmission_signal, self.sample_rate)
+        transmission_segment = Segment(transmission_signal, sample_rate)
         return transmission_segment
     
         
