@@ -187,7 +187,7 @@ class Transmitter(ABC):
         self.tx_antenna = tx_antenna
         self.tx_gain = tx_gain
         
-        self.tx_node = TX_Node()
+        self.tx_node = TX_Node(self)
         
     @abstractmethod
     def send(self, packet: Packet):
