@@ -436,7 +436,9 @@ class UHD_RX(Receiver):
         stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.stop_cont)
         self.rx_streamer.issue_stream_cmd(stream_cmd)
     
-    def waterfall(self, iterations=1000, buffer_size=2040, fft_size=256, decimator=4):
+    def waterfall(self, iterations=1000, buffer_size=2000, fft_size=256, decimator=4):
+        self.uhd_recv_buffer = np.zeros((1, 2000), dtype=np.complex64) # Set for UHD specific. Refactor this out.
+        buffer_fixer = 100
         waterfall_data = np.zeros((iterations, fft_size))
         
         fig, ax = plt.subplots()
@@ -455,15 +457,23 @@ class UHD_RX(Receiver):
         # self.set_buffer_size(int(4e6))
         # self.read()
         # Set to the corrent buffer_size for reading
-        self.set_buffer_size(buffer_size)
+        # self.set_buffer_size(buffer_size * buffer_fixer)
         
+        num_samps = 200000
+        # TODO: Pick a better name or possibly not need this
+        self.sample = np.zeros(num_samps, dtype=np.complex64)
         def update_image(frame):
-            sample = self.read()
-            sample = sample[::decimator]
-            freq_domain = np.fft.fftshift(np.fft.fft(sample, n=fft_size))
-            max_magnitude_index = np.abs(freq_domain)
-            waterfall_data[1:, :] = waterfall_data[:-1, :]
-            waterfall_data[0, :] = max_magnitude_index
+            for i in range(num_samps//2000):
+                self.rx_streamer.recv(self.uhd_recv_buffer)
+                self.sample[i*2000:(i+1)*2000] = self.uhd_recv_buffer[0]
+            # sample = self.read()
+            self.sample = self.sample.reshape(num_samps//2000, buffer_size)
+            self.sample = self.sample[::decimator]
+            for i in range(num_samps//2000//decimator):
+                freq_domain = np.fft.fftshift(np.fft.fft(self.sample[i], n=fft_size))
+                max_magnitude_index = np.abs(freq_domain)
+                waterfall_data[1:, :] = waterfall_data[:-1, :]
+                waterfall_data[0, :] = max_magnitude_index
             im.set_array(waterfall_data)
             im.set_extent([-freq_range, freq_range, 0, time_domain])
             return im,
@@ -473,6 +483,8 @@ class UHD_RX(Receiver):
         plt.show()
             
     def read(self):
+        
+        
         self.rx_streamer.recv(self.read_buffer, self.rx_metadata)
         return self.read_buffer
 
