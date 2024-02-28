@@ -81,7 +81,7 @@ class FM_Packet(Packet):
         freq_deviation = 10000
         symbol_length = 10000
         segment = self.generate_fm_packet(message, sample_rate, freq, freq_deviation, symbol_length)
-        super().__init__(segment.data, segment.sample_rate)
+        super().__init__(segment)
     
     def generate_fm_packet(self, binary_string, sample_rate, carrier_freq, deviation_freq, symbol_length):
         frequency = carrier_freq - deviation_freq
