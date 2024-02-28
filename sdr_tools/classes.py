@@ -73,6 +73,52 @@ class Packet(Segment):
     def __init__(self, segment: Segment):
         super().__init__(segment.data, segment.sample_rate)
 
+class FM_Packet(Packet):
+    def __init__(self):
+        message = '10100010'
+        freq = 40000
+        freq_deviation = 10000
+        symbol_length = 10000
+        segment = self.generate_fm_packet(message, freq, freq_deviation, symbol_length)
+        super().__init__(segment.data, segment.sample_rate)
+    
+    def generate_fm_packet(self, binary_string, carrier_freq, deviation_freq, symbol_length):
+        frequency = carrier_freq - deviation_freq
+        second_frequency = carrier_freq + deviation_freq
+        num_symbols = len(binary_string)
+        duration = (num_symbols * symbol_length) / self.sample_rate
+        t = np.arange(0, duration, 1 / self.sample_rate)
+        print("Num symbols: ", num_symbols, "|", "Symbol length: ", symbol_length)
+        transmission_signal = np.zeros(len(t), dtype=np.complex64)
+        time_interval = 1 / self.sample_rate
+        
+        # TODO: Make more efficient. Calc phase shift right after symbol wave. Use 'np.exp()'
+        for i, bit in enumerate(binary_string):
+            start_index = symbol_length * i
+            end_index = start_index + symbol_length
+            symbol_time = symbol_length * time_interval
+            if i == 0:
+                phase_shift = 0.0
+            elif binary_string[i-1] == '0':
+                phase_shift += 2 * np.pi * frequency * symbol_time
+            elif binary_string[i-1] == '1':
+                phase_shift += 2 * np.pi * second_frequency * symbol_time
+            else:
+                print("Something is wrong with calculating phase shift")
+            if bit == '0':
+                symbol_wave_real = np.cos(2 * np.pi * frequency * t + phase_shift)
+                symbol_wave_imag = np.cos(2 * np.pi * frequency * t + (phase_shift - (np.pi / 2)))
+            elif bit == '1':
+                symbol_wave_real = np.cos(2 * np.pi * second_frequency * t + phase_shift)
+                symbol_wave_imag = np.cos(2 * np.pi * second_frequency * t + (phase_shift - (np.pi / 2)))
+            else:
+                print("Something is wrong with the binary_string")
+            transmission_signal.real[start_index:end_index] = symbol_wave_real[0:symbol_length]
+            transmission_signal.imag[start_index:end_index] = symbol_wave_imag[0:symbol_length]
+        transmission_segment = Segment(transmission_signal, self.sample_rate)
+        return transmission_segment
+    
+        
 class Filter(Segment):
     def __init__(self, segment: Segment):
         super().__init__(segment.data, segment.sample_rate)
@@ -164,42 +210,6 @@ class Transmitter(ABC):
         transmission = np.convolve(x, rrc)
         transmission_segment = Segment(transmission, sample_rate)
         return transmission_segment
-    
-    def generate_fm_packet(self, binary_string, carrier_freq, deviation_freq, symbol_length):
-        frequency = carrier_freq - deviation_freq
-        second_frequency = carrier_freq + deviation_freq
-        num_symbols = len(binary_string)
-        duration = (num_symbols * symbol_length) / self.sample_rate
-        t = np.arange(0, duration, 1 / self.sample_rate)
-        print("Num symbols: ", num_symbols, "|", "Symbol length: ", symbol_length)
-        transmission_signal = np.zeros(len(t), dtype=np.complex64)
-        time_interval = 1 / self.sample_rate
-        
-        # TODO: Make more efficient. Calc phase shift right after symbol wave. Use 'np.exp()'
-        for i, bit in enumerate(binary_string):
-            start_index = symbol_length * i
-            end_index = start_index + symbol_length
-            symbol_time = symbol_length * time_interval
-            if i == 0:
-                phase_shift = 0.0
-            elif binary_string[i-1] == '0':
-                phase_shift += 2 * np.pi * frequency * symbol_time
-            elif binary_string[i-1] == '1':
-                phase_shift += 2 * np.pi * second_frequency * symbol_time
-            else:
-                print("Something is wrong with calculating phase shift")
-            if bit == '0':
-                symbol_wave_real = np.cos(2 * np.pi * frequency * t + phase_shift)
-                symbol_wave_imag = np.cos(2 * np.pi * frequency * t + (phase_shift - (np.pi / 2)))
-            elif bit == '1':
-                symbol_wave_real = np.cos(2 * np.pi * second_frequency * t + phase_shift)
-                symbol_wave_imag = np.cos(2 * np.pi * second_frequency * t + (phase_shift - (np.pi / 2)))
-            else:
-                print("Something is wrong with the binary_string")
-            transmission_signal.real[start_index:end_index] = symbol_wave_real[0:symbol_length]
-            transmission_signal.imag[start_index:end_index] = symbol_wave_imag[0:symbol_length]
-        transmission_segment = Segment(transmission_signal, self.sample_rate)
-        return Packet(transmission_segment)
     
     def burst(self, packet: Packet, times, pause_delay=0):
         for i in range(times):
@@ -436,6 +446,7 @@ class UHD_RX(Receiver):
         stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.stop_cont)
         self.rx_streamer.issue_stream_cmd(stream_cmd)
     
+    #TODO: This function needs a LOT of refactoring. Too much experimentation to figure out solution.
     def waterfall(self, iterations=1000, buffer_size=2000, fft_size=256, decimator=4):
         self.uhd_recv_buffer = np.zeros((1, 2000), dtype=np.complex64) # Set for UHD specific. Refactor this out.
         buffer_fixer = 100
