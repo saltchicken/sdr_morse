@@ -420,9 +420,9 @@ class UHD_RX(Receiver):
         # recv_buffer = np.zeros((1, self.read_buffer_size), dtype=np.complex64)
 
         # Start Stream
-        # stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.start_cont)
-        # stream_cmd.stream_now = True
-        # self.rx_streamer.issue_stream_cmd(stream_cmd)
+        stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.start_cont)
+        stream_cmd.stream_now = True
+        self.rx_streamer.issue_stream_cmd(stream_cmd)
         
         # TODO: Possibly implement this for efficiency if larger buffer needed.
         # for i in range(num_samps//1000):
@@ -433,8 +433,8 @@ class UHD_RX(Receiver):
     
     def __exit__(self, *args, **kwargs):
         print("Exiting Receiver")
-        # stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.stop_cont)
-        # self.rx_streamer.issue_stream_cmd(stream_cmd)
+        stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.stop_cont)
+        self.rx_streamer.issue_stream_cmd(stream_cmd)
     
     def waterfall(self, iterations=1000, buffer_size=2000, fft_size=256, decimator=4):
         self.uhd_recv_buffer = np.zeros((1, 2000), dtype=np.complex64) # Set for UHD specific. Refactor this out.
@@ -489,13 +489,13 @@ class UHD_RX(Receiver):
         plt.show()
             
     def read(self):
-        stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.start_cont)
-        stream_cmd.stream_now = True
-        self.rx_streamer.issue_stream_cmd(stream_cmd)
+        # stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.start_cont)
+        # stream_cmd.stream_now = True
+        # self.rx_streamer.issue_stream_cmd(stream_cmd)
         
         self.rx_streamer.recv(self.read_buffer, self.rx_metadata)
-        stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.stop_cont)
-        self.rx_streamer.issue_stream_cmd(stream_cmd)
+        # stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.stop_cont)
+        # self.rx_streamer.issue_stream_cmd(stream_cmd)
         return self.read_buffer
 
 class Lime_TX(Transmitter):
