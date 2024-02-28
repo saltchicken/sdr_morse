@@ -489,9 +489,13 @@ class UHD_RX(Receiver):
         plt.show()
             
     def read(self):
-        
+        stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.start_cont)
+        stream_cmd.stream_now = True
+        self.rx_streamer.issue_stream_cmd(stream_cmd)
         
         self.rx_streamer.recv(self.read_buffer, self.rx_metadata)
+        stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.stop_cont)
+        self.rx_streamer.issue_stream_cmd(stream_cmd)
         return self.read_buffer
 
 class Lime_TX(Transmitter):
