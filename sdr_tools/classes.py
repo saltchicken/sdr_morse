@@ -467,7 +467,7 @@ class UHD_RX(Receiver):
                 self.rx_streamer.recv(self.uhd_recv_buffer, self.rx_metadata)
                 sample_buffer[i*2000:(i+1)*2000] = self.uhd_recv_buffer[0]
             # sample = self.read()
-            
+            sample = np.copy(sample_buffer)
             sample = sample.reshape(num_samps//2000, buffer_size)
             sample = sample[::decimator]
             for i in range(num_samps//2000//decimator):
