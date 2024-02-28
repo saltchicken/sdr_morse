@@ -11,5 +11,5 @@ tx_antenna = ''
 tx_freq = 434e6 # center_freq
 
 with UHD_RX_TX(sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna) as transceiver:
-    fm_packet = FM_Packet()
+    fm_packet = FM_Packet('10101010')
     embed()

@@ -74,8 +74,7 @@ class Packet(Segment):
         super().__init__(segment.data, segment.sample_rate)
 
 class FM_Packet(Packet):
-    def __init__(self):
-        message = '10100010'
+    def __init__(self, message):
         sample_rate = 2e6
         freq = 40000
         freq_deviation = 10000
