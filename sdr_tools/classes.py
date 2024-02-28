@@ -461,16 +461,17 @@ class UHD_RX(Receiver):
         
         num_samps = 200000
         # TODO: Pick a better name or possibly not need this
-        self.sample = np.zeros(num_samps, dtype=np.complex64)
         def update_image(frame):
+            sample_buffer = np.zeros(num_samps, dtype=np.complex64)
             for i in range(num_samps//2000):
                 self.rx_streamer.recv(self.uhd_recv_buffer, self.rx_metadata)
-                self.sample[i*2000:(i+1)*2000] = self.uhd_recv_buffer[0]
+                sample_buffer[i*2000:(i+1)*2000] = self.uhd_recv_buffer[0]
             # sample = self.read()
-            self.sample = self.sample.reshape(num_samps//2000, buffer_size)
-            self.sample = self.sample[::decimator]
+            
+            sample = sample.reshape(num_samps//2000, buffer_size)
+            sample = sample[::decimator]
             for i in range(num_samps//2000//decimator):
-                freq_domain = np.fft.fftshift(np.fft.fft(self.sample[i], n=fft_size))
+                freq_domain = np.fft.fftshift(np.fft.fft(sample[i], n=fft_size))
                 max_magnitude_index = np.abs(freq_domain)
                 waterfall_data[1:, :] = waterfall_data[:-1, :]
                 waterfall_data[0, :] = max_magnitude_index
