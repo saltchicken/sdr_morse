@@ -462,15 +462,15 @@ class UHD_RX(Receiver):
         num_samps = 200000
         # TODO: Pick a better name or possibly not need this
         def update_image(frame):
-            stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.start_cont)
-            stream_cmd.stream_now = True
-            self.rx_streamer.issue_stream_cmd(stream_cmd)
+            # stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.start_cont)
+            # stream_cmd.stream_now = True
+            # self.rx_streamer.issue_stream_cmd(stream_cmd)
             sample_buffer = np.zeros(num_samps, dtype=np.complex64)
             for i in range(num_samps//2000):
                 self.rx_streamer.recv(self.uhd_recv_buffer, self.rx_metadata)
                 sample_buffer[i*2000:(i+1)*2000] = self.uhd_recv_buffer[0]
-            stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.stop_cont)
-            self.rx_streamer.issue_stream_cmd(stream_cmd)
+            # stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.stop_cont)
+            # self.rx_streamer.issue_stream_cmd(stream_cmd)
             # sample = self.read()
             sample = np.copy(sample_buffer)
             sample = sample.reshape(num_samps//2000, buffer_size)
