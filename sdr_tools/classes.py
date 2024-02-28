@@ -435,7 +435,43 @@ class UHD_RX(Receiver):
         print("Exiting Receiver")
         stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.stop_cont)
         self.rx_streamer.issue_stream_cmd(stream_cmd)
+    
+    def waterfall(self, iterations=1000, buffer_size=2040, fft_size=256, decimator=4):
+        waterfall_data = np.zeros((iterations, fft_size))
         
+        fig, ax = plt.subplots()
+        fig.set_size_inches(12, 10)
+        im = ax.imshow(waterfall_data, cmap='viridis')
+        
+        freq_range = self.sample_rate / 2000 # Half sample_rate and convert to kHz
+        time_domain = buffer_size * iterations * decimator / self.sample_rate
+        plt.imshow(waterfall_data, extent=[-freq_range, freq_range, 0, time_domain], aspect='auto')
+        ax.set_xlabel('Frequency (kHz)')
+        ax.set_ylabel('Time (s)')
+        ax.set_title('Waterfall Plot')
+        fig.colorbar(im, label='Amplitude')
+        
+        # Clear the read_buffer of Soapy Device
+        # self.set_buffer_size(int(4e6))
+        # self.read()
+        # Set to the corrent buffer_size for reading
+        self.set_buffer_size(buffer_size)
+        
+        def update_image(frame):
+            sample = self.read()
+            sample = sample[::decimator]
+            freq_domain = np.fft.fftshift(np.fft.fft(sample, n=fft_size))
+            max_magnitude_index = np.abs(freq_domain)
+            waterfall_data[1:, :] = waterfall_data[:-1, :]
+            waterfall_data[0, :] = max_magnitude_index
+            im.set_array(waterfall_data)
+            im.set_extent([-freq_range, freq_range, 0, time_domain])
+            return im,
+        
+        interval = 0  # milliseconds
+        ani = FuncAnimation(fig, update_image, interval=interval, blit=True)
+        plt.show()
+            
     def read(self):
         self.rx_streamer.recv(self.read_buffer, self.rx_metadata)
         return self.read_buffer
