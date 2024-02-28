@@ -117,7 +117,6 @@ class FM_Packet(Packet):
             transmission_signal.imag[start_index:end_index] = symbol_wave_imag[0:symbol_length]
         transmission_segment = Segment(transmission_signal, sample_rate)
         return transmission_segment
-    
         
 class Filter(Segment):
     def __init__(self, segment: Segment):
@@ -188,6 +187,8 @@ class Transmitter(ABC):
         self.tx_antenna = tx_antenna
         self.tx_gain = tx_gain
         
+        self.tx_node = TX_Node()
+        
     @abstractmethod
     def send(self, packet: Packet):
         pass
@@ -215,27 +216,8 @@ class Transmitter(ABC):
         for i in range(times):
             self.send(packet)
             if pause_delay:
-                time.sleep(pause_delay)
-
-    def tx_node(self):
-        tx_data = self.generate_fm_packet('10100010', 40000, 10000, 10000)
-        self.kill_tx = threading.Event()
-        print('Starting tx_node')
-        while not self.kill_tx.is_set():
-            self.send(tx_data)
-            time.sleep(1)
-        print('Killing tx_node')
-    
-    def tx_node_start(self):
-           self.tx_thread = threading.Thread(target=self.tx_node)
-           self.tx_thread.start()
-    
-    def tx_node_stop(self):
-        # TODO: Make sure that tx_node is running
-        self.kill_tx.set()
-        self.tx_thread.join()
-        print('TX thread successfully exited')
-            
+                time.sleep(pause_delay) 
+               
 class Receiver(ABC):
     def __init__(self, sample_rate, frequency, antenna, freq_correction=0, read_buffer_size=1024):
         self.sample_rate = sample_rate
@@ -567,6 +549,27 @@ class UHD_TX(Transmitter):
         self.gain = gain
         self.usrp.set_tx_gain(self.gain)
 
+class TX_Node(threading.Thread):
+    def __init__(self):
+        super().__init__()
+        
+    def run(self):
+        tx_data = self.generate_fm_packet('10100010', 40000, 10000, 10000)
+        self.kill_tx = threading.Event()
+        print('Starting tx_node')
+        while not self.kill_tx.is_set():
+            self.send(tx_data)
+            time.sleep(1)
+        print('Killing tx_node')
+        
+    def stop(self):
+        # TODO: Make sure that tx_node is running
+        self.kill_tx.set()
+        self.join()
+        print('TX thread successfully exited')
+        
+        
+    
 class Lime_RX_TX(Lime_RX, Lime_TX):
     def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna):
         super().__init__(sample_rate, rx_freq, rx_antenna)
