@@ -550,15 +550,16 @@ class UHD_TX(Transmitter):
         self.usrp.set_tx_gain(self.gain)
 
 class TX_Node(threading.Thread):
-    def __init__(self):
+    def __init__(self, transmitter):
         super().__init__()
+        self.transmitter = transmitter
         
     def run(self):
         tx_data = FM_Packet('10101010')
         self.kill_tx = threading.Event()
         print('Starting tx_node')
         while not self.kill_tx.is_set():
-            self.send(tx_data)
+            self.transmitter.send(tx_data)
             time.sleep(1)
         print('Killing tx_node')
         
