@@ -554,7 +554,7 @@ class TX_Node(threading.Thread):
         super().__init__()
         
     def run(self):
-        tx_data = self.generate_fm_packet('10100010', 40000, 10000, 10000)
+        tx_data = FM_Packet('10101010')
         self.kill_tx = threading.Event()
         print('Starting tx_node')
         while not self.kill_tx.is_set():
