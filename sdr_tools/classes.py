@@ -464,7 +464,7 @@ class UHD_RX(Receiver):
         self.sample = np.zeros(num_samps, dtype=np.complex64)
         def update_image(frame):
             for i in range(num_samps//2000):
-                self.rx_streamer.recv(self.uhd_recv_buffer)
+                self.rx_streamer.recv(self.uhd_recv_buffer, self.rx_metadata)
                 self.sample[i*2000:(i+1)*2000] = self.uhd_recv_buffer[0]
             # sample = self.read()
             self.sample = self.sample.reshape(num_samps//2000, buffer_size)
