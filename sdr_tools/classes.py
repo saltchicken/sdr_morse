@@ -580,6 +580,7 @@ class RX_Node(threading.Thread):
         self.kill_rx = threading.Event()
         print('Starting rx node')
         while not self.kill_rx.is_set():
+            print('RX_Node listening')
             decoded = self.receiver.capture_signal_decode()
         print('Killing rx_node')
         
