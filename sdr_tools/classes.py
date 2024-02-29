@@ -582,8 +582,8 @@ class RX_Node(threading.Thread):
         print('Starting rx node')
         while not self.kill_rx.is_set():
             print('RX_Node listening')
-            decoded = str(self.receiver.capture_signal_decode())
-            self.dispatcher.action(decoded)
+            decoded = self.receiver.capture_signal_decode()
+            self.dispatcher.action(str(decoded.decoded))
             # previous_length = len(self.receiver.read_buffer)
             # self.receiver.set_buffer_size(4e6)
             # self.receiver.read() # Clear buffer
