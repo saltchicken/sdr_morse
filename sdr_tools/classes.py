@@ -575,13 +575,15 @@ class RX_Node(threading.Thread):
     def __init__(self, receiver):
         super().__init__()
         self.receiver = receiver
+        self.dispatcher = Dispatcher()
     
     def run(self):
         self.kill_rx = threading.Event()
         print('Starting rx node')
         while not self.kill_rx.is_set():
             print('RX_Node listening')
-            decoded = self.receiver.capture_signal_decode()
+            decoded = ''.join(self.receiver.capture_signal_decode())
+            self.dispatcher.action(decoded)
             # previous_length = len(self.receiver.read_buffer)
             # self.receiver.set_buffer_size(4e6)
             # self.receiver.read() # Clear buffer
@@ -593,6 +595,16 @@ class RX_Node(threading.Thread):
         self.kill_rx.set()
         self.join()
         print('RX thread successfully exited')
+
+class Dispatcher():
+    def __init__(self):
+        self.preamble = '10100011'
+    
+    def action(self, message):
+        if message[:8] == self.preamble:
+            print(f'Data received: ', {message[8:]})
+        else:
+            print('Preamble missing')
                   
 class Lime_RX_TX(Lime_RX, Lime_TX):
     def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna):
