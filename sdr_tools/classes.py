@@ -583,7 +583,7 @@ class RX_Node(threading.Thread):
         while not self.kill_rx.is_set():
             print('RX_Node listening')
             decoded = self.receiver.capture_signal_decode()
-            self.dispatcher.action(str(decoded.decoded))
+            self.dispatcher.action(decoded.decoded)
             # previous_length = len(self.receiver.read_buffer)
             # self.receiver.set_buffer_size(4e6)
             # self.receiver.read() # Clear buffer
@@ -598,14 +598,14 @@ class RX_Node(threading.Thread):
 
 class Dispatcher():
     def __init__(self):
-        self.preamble = '10100011'
+        self.preamble = np.array('10100011').astype(int)
     
     def action(self, message):
         # TODO: Make this a function
-        array_string = np.array2string(message).replace(' ', '')[1:-1]
-        print(array_string)
-        if array_string[:8] == self.preamble:
-            print(f'Data received: ', {array_string[8:]})
+        # array_string = np.array2string(message).replace(' ', '')[1:-1]
+        # print(array_string)
+        if message[:8] == self.preamble:
+            print(f'Data received: ', {message[8:]})
         else:
             print('Preamble missing')
                   
