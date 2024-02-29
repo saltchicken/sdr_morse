@@ -582,6 +582,7 @@ class RX_Node(threading.Thread):
         while not self.kill_rx.is_set():
             print('RX_Node listening')
             decoded = self.receiver.capture_signal_decode()
+            self.receiver.read() # Clear buffer
         print('Killing rx_node')
         
     def stop(self):
