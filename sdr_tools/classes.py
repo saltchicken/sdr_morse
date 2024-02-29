@@ -292,8 +292,8 @@ class Receiver(ABC):
     def capture_signal(self, threshold=0.005, buffer_size=1024, frequency_shift=40000, continuous=False):
         # Clear the read_buffer of Soapy Device
         # TODO: This might be a problem when using devices other than LimeSDR
-        self.set_buffer_size(int(4e6))
-        self.read()
+        # self.set_buffer_size(int(4e6))
+        # self.read()
         
         self.set_buffer_size(buffer_size)
         shift_frequency = ShiftFrequency(self.sample_rate, frequency_shift, buffer_size)
@@ -582,10 +582,10 @@ class RX_Node(threading.Thread):
         while not self.kill_rx.is_set():
             print('RX_Node listening')
             decoded = self.receiver.capture_signal_decode()
-            previous_length = len(self.receiver.read_buffer)
-            self.receiver.set_buffer_size(4e6)
-            self.receiver.read() # Clear buffer
-            self.receiver.set_buffer_size(previous_length)
+            # previous_length = len(self.receiver.read_buffer)
+            # self.receiver.set_buffer_size(4e6)
+            # self.receiver.read() # Clear buffer
+            # self.receiver.set_buffer_size(previous_length)
         print('Killing rx_node')
         
     def stop(self):
