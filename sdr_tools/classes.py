@@ -598,7 +598,7 @@ class RX_Node(threading.Thread):
 
 class Dispatcher():
     def __init__(self):
-        self.preamble = np.array('10100011').astype(int)
+        self.preamble = np.array([1,0,1,0,0,0,1,1]).astype(int)
     
     def action(self, message):
         # TODO: Make this a function
