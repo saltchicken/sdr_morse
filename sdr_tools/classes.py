@@ -605,7 +605,7 @@ class Dispatcher():
         # array_string = np.array2string(message).replace(' ', '')[1:-1]
         # print(array_string)
         if np.array_equal(message[:8],self.preamble):
-            print(f'Data received: ', {message[8:]})
+            print(f'Data received:  {tuple(message[8:])}')
         else:
             print('Preamble missing')
                   
