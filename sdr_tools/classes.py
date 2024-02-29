@@ -601,8 +601,11 @@ class Dispatcher():
         self.preamble = '10100011'
     
     def action(self, message):
-        if message[:8] == self.preamble:
-            print(f'Data received: ', {message[8:]})
+        # TODO: Make this a function
+        array_string = np.array2string(message).replace(' ', '')[1:-1]
+        print(array_string)
+        if array_string[:8] == self.preamble:
+            print(f'Data received: ', {array_string[8:]})
         else:
             print('Preamble missing')
                   
