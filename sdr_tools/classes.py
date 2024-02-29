@@ -226,6 +226,8 @@ class Receiver(ABC):
         self.freq_correction = freq_correction
         
         self.read_buffer = np.array([0] * read_buffer_size, np.complex64)
+        
+        self.rx_node = RX_Node(self)
     
     @abstractmethod    
     def read(self):
@@ -569,8 +571,24 @@ class TX_Node(threading.Thread):
         self.join()
         print('TX thread successfully exited')
         
-        
+class RX_Node(threading.Thread):
+    def __init__(self, receiver):
+        super().__init__()
+        self.receiver = receiver
     
+    def run(self):
+        self.kill_rx = threading.Event()
+        print('Starting rx node')
+        while not self.kill_rx.is_set():
+            decoded = self.receiver.capture_signal_decode()
+        print('Killing rx_node')
+        
+    def stop(self):
+        # TODO: Make sure that rx_node is running
+        self.kill_rx.set()
+        self.join()
+        print('RX thread successfully exited')
+                  
 class Lime_RX_TX(Lime_RX, Lime_TX):
     def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna):
         super().__init__(sample_rate, rx_freq, rx_antenna)
