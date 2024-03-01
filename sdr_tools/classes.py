@@ -610,7 +610,7 @@ class Dispatcher():
 
 class ReceiverDispatcher(Dispatcher):
     def __init__(self, TX_to_RX, RX_to_TX):
-        super().__init__(self, TX_to_RX, RX_to_TX)
+        super().__init__(TX_to_RX, RX_to_TX)
         
     def action(self, message):
         if np.array_equal(message[:8],self.preamble):
@@ -622,7 +622,7 @@ class ReceiverDispatcher(Dispatcher):
         
 class TransmitterDispatcher(Dispatcher):
     def __init__(self, TX_to_RX, RX_to_TX):
-        super().__init__(self, TX_to_RX, RX_to_TX)
+        super().__init__(TX_to_RX, RX_to_TX)
 
 @dataclass
 class NodeMessage():
