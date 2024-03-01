@@ -633,9 +633,11 @@ class NodeMessage():
 
                   
 class Lime_RX_TX(Lime_RX, Lime_TX):
-    def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna):
+    def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna, full_duplex=False):
+        self.full_duplex = full_duplex
         super().__init__(sample_rate, rx_freq, rx_antenna)
         super(Lime_TX, self).__init__(sample_rate, tx_freq, tx_antenna)
+        
     
     def __enter__(self):
         Lime_RX.__enter__(self)
@@ -651,7 +653,8 @@ class Lime_RX_TX(Lime_RX, Lime_TX):
         Lime_TX.__exit__(self)
             
 class UHD_RX_TX(UHD_RX, UHD_TX):
-    def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna):
+    def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna, full_duplex=False):
+        self.full_duplex = full_duplex
         super().__init__(sample_rate, rx_freq, rx_antenna)
         super(UHD_TX, self).__init__(sample_rate, tx_freq, tx_antenna)
         
@@ -663,8 +666,16 @@ class UHD_RX_TX(UHD_RX, UHD_TX):
         RX_to_TX = queue.Queue()
         self.rx_node = RX_Node(self, TX_to_RX, RX_to_TX)
         self.tx_node = TX_Node(self, TX_to_RX, RX_to_TX)
+        if self.full_duplex:
+            self.rx_node.start()
+            self.tx_node.start()
         return self
         
     def __exit__(self, *args, **kwargs):
+        if self.full_duplex:
+            self.rx_node.stop()
+            self.tx_node.stop()
         UHD_RX.__exit__(self)
         UHD_TX.__exit__(self)
+        
+        
