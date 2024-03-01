@@ -321,7 +321,7 @@ class Receiver(ABC):
             return None
         else:
             logger.debug('Returning captured signals')
-            return captured_signals
+            return captured_signals[0]
         
     def capture_signal_decode(self, kill_rx, symbol_length=10000):
         # try:
