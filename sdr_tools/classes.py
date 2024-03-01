@@ -333,7 +333,7 @@ class Receiver(ABC):
         # except FunctionTimedOut:
         #     logger.debug("Capture Signal timedout")
         #     return None
-        received = self.capture_signal(kill_rx=kill_rx)
+        received = self.capture_signal(kill_rx=kill_rx)[0]
         decoded = Decoded(received, symbol_length)
         return decoded
 
