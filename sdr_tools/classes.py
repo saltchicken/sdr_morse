@@ -96,7 +96,7 @@ class FM_Packet(Packet):
         num_symbols = len(binary_string)
         duration = (num_symbols * symbol_length) / sample_rate
         t = np.arange(0, duration, 1 / sample_rate)
-        logger.debug(f"Num symbols: {num_symbols}|, Symbol length: {symbol_length}")
+        logger.debug("Num symbols: ", num_symbols, "|", "Symbol length: ", symbol_length)
         transmission_signal = np.zeros(len(t), dtype=np.complex64)
         time_interval = 1 / sample_rate
         
