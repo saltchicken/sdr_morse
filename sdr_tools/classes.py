@@ -320,7 +320,8 @@ class Receiver(ABC):
         
     def capture_signal_decode(self, symbol_length=10000):
         try:
-            received = func_timeout(5, self.capture_signal()[0])
+            received = func_timeout(5, self.capture_signal())
+            received = received[0]
         except FunctionTimedOut:
             print("Capture Signal timedout")
             return None
