@@ -13,5 +13,5 @@ rx_channel = 40000
 tx_freq = 434e6 # center_freq
 
 with UHD_RX_TX(sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna, rx_channel, full_duplex=True) as transceiver:
-    fm_packet = FM_Packet('10101010', channel_freq=25000)
+    fm_packet = FM_Packet('101000111001001000010100101101010110', channel_freq=25000)
     embed()
