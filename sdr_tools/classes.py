@@ -629,7 +629,7 @@ class ReceiverDispatcher(Dispatcher):
     def action(self, message):
         logger.debug(f"Decoded signal: {message}")
         if np.array_equal(message[:8],self.preamble):
-            logger.debug(f'Data received:  {tuple(message[8:])}')
+            logger.debug(f'Data received:  {message[8:]}')
             self.RX_to_TX.put('yes')
         else:
             logger.debug('Preamble missing')
