@@ -549,9 +549,13 @@ class UHD_TX(Transmitter):
         self.usrp.set_tx_gain(self.gain)
 
 class TX_Node(threading.Thread):
-    def __init__(self, transmitter):
+    def __init__(self, transmitter, TX_to_RX, RX_to_TX):
         super().__init__()
         self.transmitter = transmitter
+        self.TX_to_RX = TX_to_RX
+        self.RX_to_TX = RX_to_TX
+        
+        # TODO: Needs a Dispatcher
         
     def run(self):
         tx_data = FM_Packet('10101010')
@@ -569,10 +573,13 @@ class TX_Node(threading.Thread):
         print('TX thread successfully exited')
         
 class RX_Node(threading.Thread):
-    def __init__(self, receiver):
+    def __init__(self, receiver, TX_to_RX, RX_to_TX):
         super().__init__()
         self.receiver = receiver
-        self.dispatcher = Dispatcher()
+        self.TX_to_RX = TX_to_RX
+        self.RX_to_TX = RX_to_TX
+        
+        self.dispatcher = Dispatcher(self.TX_to_RX, self.RX_to_TX)
     
     def run(self):
         self.kill_rx = threading.Event()
@@ -594,8 +601,10 @@ class RX_Node(threading.Thread):
         print('RX thread successfully exited')
 
 class Dispatcher():
-    def __init__(self):
+    def __init__(self, TX_to_RX, RX_to_TX):
         self.preamble = np.array([1,0,1,0,0,0,1,1]).astype(int)
+        self.TX_to_RX = TX_to_RX
+        self.RX_to_TX = RX_to_TX
     
     def action(self, message):
         if np.array_equal(message[:8],self.preamble):
@@ -633,8 +642,11 @@ class UHD_RX_TX(UHD_RX, UHD_TX):
     def __enter__(self):
         UHD_RX.__enter__(self)
         UHD_TX.__enter__(self)
-        self.rx_node = RX_Node(self)
-        self.tx_node = TX_Node(self)
+        
+        TX_to_RX = queue.Queue()
+        RX_to_TX = queue.Queue()
+        self.rx_node = RX_Node(self, TX_to_RX, RX_to_TX)
+        self.tx_node = TX_Node(self, TX_to_RX, RX_to_TX)
         return self
         
     def __exit__(self, *args, **kwargs):
