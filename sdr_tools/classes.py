@@ -15,6 +15,10 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import threading, queue
 from func_timeout import func_timeout, FunctionTimedOut
+from loguru import logger
+
+logger.remove()
+logger.add(sys.stderr, level="DEBUG")
 
 class ShiftFrequency():
     def __init__(self, sample_rate, frequency, num_samps):
@@ -90,7 +94,7 @@ class FM_Packet(Packet):
         num_symbols = len(binary_string)
         duration = (num_symbols * symbol_length) / sample_rate
         t = np.arange(0, duration, 1 / sample_rate)
-        print("Num symbols: ", num_symbols, "|", "Symbol length: ", symbol_length)
+        logger.debug("Num symbols: ", num_symbols, "|", "Symbol length: ", symbol_length)
         transmission_signal = np.zeros(len(t), dtype=np.complex64)
         time_interval = 1 / sample_rate
         
@@ -106,7 +110,7 @@ class FM_Packet(Packet):
             elif binary_string[i-1] == '1':
                 phase_shift += 2 * np.pi * second_frequency * symbol_time
             else:
-                print("Something is wrong with calculating phase shift")
+                logger.debug("Something is wrong with calculating phase shift")
             if bit == '0':
                 symbol_wave_real = np.cos(2 * np.pi * frequency * t + phase_shift)
                 symbol_wave_imag = np.cos(2 * np.pi * frequency * t + (phase_shift - (np.pi / 2)))
@@ -114,7 +118,7 @@ class FM_Packet(Packet):
                 symbol_wave_real = np.cos(2 * np.pi * second_frequency * t + phase_shift)
                 symbol_wave_imag = np.cos(2 * np.pi * second_frequency * t + (phase_shift - (np.pi / 2)))
             else:
-                print("Something is wrong with the binary_string")
+                logger.debug("Something is wrong with the binary_string")
             transmission_signal.real[start_index:end_index] = symbol_wave_real[0:symbol_length]
             transmission_signal.imag[start_index:end_index] = symbol_wave_imag[0:symbol_length]
         transmission_segment = Segment(transmission_signal, sample_rate)
@@ -164,7 +168,7 @@ class Decoded(Segment):
         self.demod.data = self.demod.data[symbol_length//2:] # Offset the sample. Poverty synchronization
         self.resample = Resample(self.demod, 1, symbol_length)
         self.decoded = self.decode_segment(self.resample)
-        print(self.decoded)
+        logger.debug(self.decoded)
         
     def plot_decoded(self):
         plt.figure(figsize=(10, 8))
@@ -197,7 +201,7 @@ class Transmitter(ABC):
         # bits = np.array([1,0,0,0,1,1,0,0,0,1,1,1,0,0,1,1], np.complex64)
         # bits = np.tile(bits, 100)
         num_symbols = len(bits)
-        print("Num symbols: ", num_symbols)
+        logger.debug("Num symbols: ", num_symbols)
         sps = 8
         sample_rate = self.sample_rate
         x = np.array([])
@@ -303,19 +307,19 @@ class Receiver(ABC):
                 sample = sample * shift_frequency.next()
                 # sample = Filter.low_pass_filter(sample, self.sample_rate, 15000)
                 if np.max(np.abs(sample)) >= threshold:
-                    print("Buffer found signal present")
+                    logger.debug("Buffer found signal present")
                     signal.append(sample)
                 else:
                     if len(signal) > 0:
-                        print("Writing signal to captured signals")
+                        logger.debug("Writing signal to captured signals")
                         captured_signals.append(Segment(np.concatenate(signal), self.sample_rate))
                         if not continuous:
                             break
                         signal = []
         except KeyboardInterrupt:
-            print("Exiting capture signal")
+            logger.debug("Exiting capture signal")
         
-        print('Returning captured signals')
+        logger.debug('Returning captured signals')
         return captured_signals
         
     def capture_signal_decode(self, symbol_length=10000):
@@ -323,7 +327,7 @@ class Receiver(ABC):
             received = func_timeout(5, self.capture_signal)
             received = received[0]
         except FunctionTimedOut:
-            print("Capture Signal timedout")
+            logger.debug("Capture Signal timedout")
             return None
         decoded = Decoded(received, symbol_length)
         return decoded
@@ -333,7 +337,7 @@ class Lime_RX(Receiver):
         super().__init__(sample_rate, frequency, antenna, freq_correction, read_buffer_size)
     
     def __enter__(self):
-        print('Entering Receiver')
+        logger.debug('Entering Receiver')
         args = dict(driver="lime")
         self.sdr = SoapySDR.Device(args)
         self.sdr.setSampleRate(SOAPY_SDR_RX, 0, self.sample_rate)
@@ -345,7 +349,7 @@ class Lime_RX(Receiver):
         return self
         
     def __exit__(self, *args, **kwargs):
-        print("Exiting receiver")
+        logger.debug("Exiting receiver")
         self.sdr.deactivateStream(self.rxStream)  # stop streaming
         self.sdr.closeStream(self.rxStream)
         if 'retain_sdr' not in kwargs: # Added so that self.sdr is not deleted before objects with multiple inheritence call __exit__. Bit hacky
@@ -429,7 +433,7 @@ class UHD_RX(Receiver):
         return self
     
     def __exit__(self, *args, **kwargs):
-        print("Exiting Receiver")
+        logger.debug("Exiting Receiver")
         stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.stop_cont)
         self.rx_streamer.issue_stream_cmd(stream_cmd)
     
@@ -513,7 +517,7 @@ class Lime_TX(Transmitter):
         return self
         
     def __exit__(self, *args, **kwargs):
-        print('Exiting Transmitter')
+        logger.debug('Exiting Transmitter')
         self.sdr.deactivateStream(self.txStream)
         self.sdr.closeStream(self.txStream)
         del self.sdr
@@ -545,7 +549,7 @@ class UHD_TX(Transmitter):
         return self
     
     def __exit__(self, *args, **kwargs):
-        print("Exiting Transmitter")
+        logger.debug("Exiting Transmitter")
     
     def send(self, packet: Packet):
         self.tx_streamer.send(packet.data, self.tx_metadata)
@@ -566,7 +570,7 @@ class TX_Node(threading.Thread):
     def run(self):
         tx_data = FM_Packet('10101010')
         self.kill_tx = threading.Event()
-        print('Starting tx_node')
+        logger.debug('Starting tx_node')
         while not self.kill_tx.is_set():
             # self.transmitter.send(tx_data)
             # time.sleep(1)
@@ -574,9 +578,9 @@ class TX_Node(threading.Thread):
             if RX_to_TX_data is None:
                 time.sleep(0.1)
                 continue
-            print('TX_Node received ', RX_to_TX_data)
+            logger.debug('TX_Node received ', RX_to_TX_data)
             
-        print('Killing tx_node')
+        logger.debug('Killing tx_node')
         
     def stop(self):
         # TODO: Make sure that tx_node is running
@@ -584,7 +588,7 @@ class TX_Node(threading.Thread):
         # TODO: Probably a better way to ensure that self.RX_to_TX.get() doesn't block stop
         self.RX_to_TX.put(None)
         self.join()
-        print('TX thread successfully exited')
+        logger.debug('TX thread successfully exited')
         
 class RX_Node(threading.Thread):
     def __init__(self, receiver, TX_to_RX, RX_to_TX):
@@ -597,19 +601,19 @@ class RX_Node(threading.Thread):
     
     def run(self):
         self.kill_rx = threading.Event()
-        print('Starting rx node')
+        logger.debug('Starting rx node')
         while not self.kill_rx.is_set():
-            print('RX_Node listening')
+            logger.debug('RX_Node listening')
             decoded = self.receiver.capture_signal_decode()
             if decoded:
                 self.dispatcher.action(decoded.decoded)
-        print('Killing rx_node')
+        logger.debug('Killing rx_node')
         
     def stop(self):
         # TODO: Make sure that rx_node is running
         self.kill_rx.set()
         self.join()
-        print('RX thread successfully exited')
+        logger.debug('RX thread successfully exited')
 
 class Dispatcher():
     def __init__(self, TX_to_RX, RX_to_TX):
@@ -623,10 +627,10 @@ class ReceiverDispatcher(Dispatcher):
         
     def action(self, message):
         if np.array_equal(message[:8],self.preamble):
-            print(f'Data received:  {tuple(message[8:])}')
+            logger.debug(f'Data received:  {tuple(message[8:])}')
             self.RX_to_TX.put('yes')
         else:
-            print('Preamble missing')
+            logger.debug('Preamble missing')
     
         
 class TransmitterDispatcher(Dispatcher):
