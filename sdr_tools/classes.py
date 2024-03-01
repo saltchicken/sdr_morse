@@ -562,8 +562,14 @@ class TX_Node(threading.Thread):
         self.kill_tx = threading.Event()
         print('Starting tx_node')
         while not self.kill_tx.is_set():
-            self.transmitter.send(tx_data)
-            time.sleep(1)
+            # self.transmitter.send(tx_data)
+            # time.sleep(1)
+            RX_to_TX_data = self.RX_to_TX.get()
+            if RX_to_TX_data is None:
+                time.sleep(0.1)
+                continue
+            print('TX_Node received ', RX_to_TX_data)
+            
         print('Killing tx_node')
         
     def stop(self):
@@ -579,7 +585,7 @@ class RX_Node(threading.Thread):
         self.TX_to_RX = TX_to_RX
         self.RX_to_TX = RX_to_TX
         
-        self.dispatcher = Dispatcher(self.TX_to_RX, self.RX_to_TX)
+        self.dispatcher = ReceiverDispatcher(self.TX_to_RX, self.RX_to_TX)
     
     def run(self):
         self.kill_rx = threading.Event()
@@ -588,10 +594,6 @@ class RX_Node(threading.Thread):
             print('RX_Node listening')
             decoded = self.receiver.capture_signal_decode()
             self.dispatcher.action(decoded.decoded)
-            # previous_length = len(self.receiver.read_buffer)
-            # self.receiver.set_buffer_size(4e6)
-            # self.receiver.read() # Clear buffer
-            # self.receiver.set_buffer_size(previous_length)
         print('Killing rx_node')
         
     def stop(self):
@@ -605,12 +607,22 @@ class Dispatcher():
         self.preamble = np.array([1,0,1,0,0,0,1,1]).astype(int)
         self.TX_to_RX = TX_to_RX
         self.RX_to_TX = RX_to_TX
-    
+
+class ReceiverDispatcher(Dispatcher):
+    def __init__(self, TX_to_RX, RX_to_TX):
+        super().__init__(self, TX_to_RX, RX_to_TX)
+        
     def action(self, message):
         if np.array_equal(message[:8],self.preamble):
             print(f'Data received:  {tuple(message[8:])}')
+            self.RX_to_TX.put('yes')
         else:
             print('Preamble missing')
+    
+        
+class TransmitterDispatcher(Dispatcher):
+    def __init__(self, TX_to_RX, RX_to_TX):
+        super().__init__(self, TX_to_RX, RX_to_TX)
 
 @dataclass
 class NodeMessage():
