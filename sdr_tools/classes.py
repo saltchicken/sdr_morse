@@ -292,7 +292,7 @@ class Receiver(ABC):
         
         plt.show()
         
-    def capture_signal(self, kill_rx, threshold=0.005, buffer_size=1024, frequency_shift=40000, continuous=False):
+    def capture_signal(self, kill_rx, threshold=0.005, buffer_size=1024, frequency_shift=40000):
         # Clear the read_buffer of Soapy Device
         # TODO: This might be a problem when using devices other than LimeSDR
         # self.set_buffer_size(int(4e6))
@@ -302,29 +302,27 @@ class Receiver(ABC):
         shift_frequency = ShiftFrequency(self.sample_rate, frequency_shift, buffer_size)
         signal = []
         captured_signals = []
-        try:
-            while not kill_rx.is_set():
-                sample = self.read()
-                sample = sample * shift_frequency.next()
-                # sample = Filter.low_pass_filter(sample, self.sample_rate, 15000)
-                if np.max(np.abs(sample)) >= threshold:
-                    if len(signal) == 0:
-                        logger.info(f"Signal found. Writing...")
-                    signal.append(sample)
-                else:
-                    if len(signal) > 0:
-                        logger.debug("Writing signal to captured signals")
-                        captured_signal = Segment(np.concatenate(signal), self.sample_rate)
-                        logger.info(f"Signal contains {len(captured_signal.data)} samples")
-                        captured_signals.append(captured_signal)
-                        if not continuous:
-                            break
-                        signal = []
-        except KeyboardInterrupt:
-            logger.debug("Exiting capture signal")
-        
-        logger.debug('Returning captured signals')
-        return captured_signals
+        while not kill_rx.is_set():
+            sample = self.read()
+            sample = sample * shift_frequency.next()
+            # sample = Filter.low_pass_filter(sample, self.sample_rate, 15000)
+            if np.max(np.abs(sample)) >= threshold:
+                if len(signal) == 0:
+                    logger.info(f"Signal found. Writing...")
+                signal.append(sample)
+            else:
+                if len(signal) > 0:
+                    logger.debug("Writing signal to captured signals")
+                    captured_signal = Segment(np.concatenate(signal), self.sample_rate)
+                    logger.info(f"Signal contains {len(captured_signal.data)} samples")
+                    captured_signals.append(captured_signal)
+                    break
+        if kill_rx:
+            logger.debug('Exiting capture signal')
+            return None
+        else:
+            logger.debug('Returning captured signals')
+            return captured_signals
         
     def capture_signal_decode(self, kill_rx, symbol_length=10000):
         # try:
@@ -333,9 +331,12 @@ class Receiver(ABC):
         # except FunctionTimedOut:
         #     logger.debug("Capture Signal timedout")
         #     return None
-        received = self.capture_signal(kill_rx=kill_rx)[0]
-        decoded = Decoded(received, symbol_length)
-        return decoded
+        received = self.capture_signal(kill_rx=kill_rx)
+        if received:
+            decoded = Decoded(received, symbol_length)
+            return decoded
+        else:
+            return None
 
 class Lime_RX(Receiver):
     def __init__(self, sample_rate, frequency, antenna, freq_correction=0, read_buffer_size=1024):
