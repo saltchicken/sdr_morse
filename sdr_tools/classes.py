@@ -308,6 +308,8 @@ class Receiver(ABC):
                 sample = sample * shift_frequency.next()
                 # sample = Filter.low_pass_filter(sample, self.sample_rate, 15000)
                 if np.max(np.abs(sample)) >= threshold:
+                    if len(signal) == 0:
+                        logger.info(f"Signal found. Writing...")
                     signal.append(sample)
                 else:
                     if len(signal) > 0:
