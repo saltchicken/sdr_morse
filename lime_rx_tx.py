@@ -7,8 +7,10 @@ sample_rate = 2e6
 rx_freq = 434e6 # frequency
 antenna = 'LNAW'
 
+rx_channel = 25000
+
 tx_freq = 434e6 # center_freq
 
-with Lime_RX_TX(sample_rate, rx_freq, tx_freq, antenna, 'BAND2', 25000, full_duplex=True) as transceiver:
+with Lime_RX_TX(sample_rate, rx_freq, tx_freq, antenna, 'BAND2', rx_channel, full_duplex=True) as transceiver:
     fm_packet = FM_Packet('10100010', channel_freq=40000)
     embed()
