@@ -626,8 +626,10 @@ class Lime_RX_TX(Lime_RX, Lime_TX):
     def __enter__(self):
         Lime_RX.__enter__(self)
         Lime_TX.__enter__(self)
-        self.rx_node = RX_Node(self)
-        self.tx_node = TX_Node(self)
+        TX_to_RX = queue.Queue()
+        RX_to_TX = queue.Queue()
+        self.rx_node = RX_Node(self, TX_to_RX, RX_to_TX)
+        self.tx_node = TX_Node(self, TX_to_RX, RX_to_TX)
         return self
         
     def __exit__(self, *args, **kwargs):
