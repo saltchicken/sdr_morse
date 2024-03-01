@@ -569,7 +569,7 @@ class TX_Node(threading.Thread):
         # TODO: Needs a Dispatcher
         
     def run(self):
-        tx_data = FM_Packet('10101010')
+        # tx_data = FM_Packet('10101010')
         self.kill_tx = threading.Event()
         logger.debug('Starting tx_node')
         while not self.kill_tx.is_set():
