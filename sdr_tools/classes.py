@@ -687,7 +687,7 @@ class UHD_RX_TX(UHD_RX, UHD_TX):
         
         TX_to_RX = queue.Queue()
         RX_to_TX = queue.Queue()
-        self.rx_node = RX_Node(self, TX_to_RX, RX_to_TX)
+        self.rx_node = RX_Node(self, self.rx_channel_freq, TX_to_RX, RX_to_TX)
         self.tx_node = TX_Node(self, TX_to_RX, RX_to_TX)
         if self.full_duplex:
             self.rx_node.start()
