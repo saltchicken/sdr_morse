@@ -80,9 +80,9 @@ class Packet(Segment):
         super().__init__(segment.data, segment.sample_rate)
 
 class FM_Packet(Packet):
-    def __init__(self, message):
+    def __init__(self, message, channel_freq):
         sample_rate = 2e6
-        freq = 40000
+        freq = channel_freq
         freq_deviation = 10000
         symbol_length = 10000
         segment = self.generate_fm_packet(message, sample_rate, freq, freq_deviation, symbol_length)
@@ -254,6 +254,7 @@ class Receiver(ABC):
             return Segment(data, self.sample_rate)
     
     # TODO: This does not work for UHD_RX. Look for efficient TODO about iterating the read inside UHD_RX 
+    # TODO: Remove hardcoded frequency_shift of 40000
     def live_samples(self, buffer_size=102400, fft_size=None, frequency_shift=40000, decimator=40):
         if fft_size == None:
             fft_size = buffer_size
@@ -291,14 +292,14 @@ class Receiver(ABC):
         
         plt.show()
         
-    def capture_signal(self, kill_rx, threshold=0.005, buffer_size=1024, frequency_shift=40000):
+    def capture_signal(self, kill_rx, channel_freq, threshold=0.005, buffer_size=1024):
         # Clear the read_buffer of Soapy Device
         # TODO: This might be a problem when using devices other than LimeSDR
         # self.set_buffer_size(int(4e6))
         # self.read()
         
         self.set_buffer_size(buffer_size)
-        shift_frequency = ShiftFrequency(self.sample_rate, frequency_shift, buffer_size)
+        shift_frequency = ShiftFrequency(self.sample_rate, channel_freq, buffer_size)
         signal = []
         while not kill_rx.is_set():
             sample = self.read()
@@ -318,14 +319,14 @@ class Receiver(ABC):
             logger.info(f"Returning captured signal. Signal contains {len(captured_signal.data)} samples")
             return captured_signal
         
-    def capture_signal_decode(self, kill_rx, symbol_length=10000):
+    def capture_signal_decode(self, kill_rx, channel_freq, symbol_length=10000):
         # try:
             # received = func_timeout(5, self.capture_signal)
             # received = received[0]
         # except FunctionTimedOut:
         #     logger.debug("Capture Signal timedout")
         #     return None
-        received = self.capture_signal(kill_rx=kill_rx)
+        received = self.capture_signal(kill_rx=kill_rx, channel_freq=channel_freq)
         if received:
             decoded = Decoded(received, symbol_length)
             return decoded
@@ -591,11 +592,12 @@ class TX_Node(threading.Thread):
         logger.debug('TX thread successfully exited')
         
 class RX_Node(threading.Thread):
-    def __init__(self, receiver, TX_to_RX, RX_to_TX):
+    def __init__(self, receiver, channel_freq, TX_to_RX, RX_to_TX):
         super().__init__()
         self.receiver = receiver
         self.TX_to_RX = TX_to_RX
         self.RX_to_TX = RX_to_TX
+        self.channel_freq = channel_freq
         
         self.dispatcher = ReceiverDispatcher(self.TX_to_RX, self.RX_to_TX)
     
@@ -604,7 +606,7 @@ class RX_Node(threading.Thread):
         logger.debug('Starting rx node')
         while not self.kill_rx.is_set():
             logger.debug('RX_Node listening')
-            decoded = self.receiver.capture_signal_decode(self.kill_rx)
+            decoded = self.receiver.capture_signal_decode(self.kill_rx, self.channel_freq)
             if decoded:
                 self.dispatcher.action(decoded.decoded)
 
@@ -646,8 +648,9 @@ class NodeMessage():
 
                   
 class Lime_RX_TX(Lime_RX, Lime_TX):
-    def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna, full_duplex=False):
+    def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna, rx_channel_freq, full_duplex=False):
         self.full_duplex = full_duplex
+        self.rx_channel_freq = rx_channel_freq
         super().__init__(sample_rate, rx_freq, rx_antenna)
         super(Lime_TX, self).__init__(sample_rate, tx_freq, tx_antenna)
         
@@ -657,7 +660,7 @@ class Lime_RX_TX(Lime_RX, Lime_TX):
         Lime_TX.__enter__(self)
         TX_to_RX = queue.Queue()
         RX_to_TX = queue.Queue()
-        self.rx_node = RX_Node(self, TX_to_RX, RX_to_TX)
+        self.rx_node = RX_Node(self, self.rx_channel_freq, TX_to_RX, RX_to_TX)
         self.tx_node = TX_Node(self, TX_to_RX, RX_to_TX)
         if self.full_duplex:
             self.rx_node.start()
@@ -672,8 +675,9 @@ class Lime_RX_TX(Lime_RX, Lime_TX):
         Lime_TX.__exit__(self)
             
 class UHD_RX_TX(UHD_RX, UHD_TX):
-    def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna, full_duplex=False):
+    def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna, rx_channel_freq, full_duplex=False):
         self.full_duplex = full_duplex
+        self.rx_channel_freq = rx_channel_freq
         super().__init__(sample_rate, rx_freq, rx_antenna)
         super(UHD_TX, self).__init__(sample_rate, tx_freq, tx_antenna)
         
