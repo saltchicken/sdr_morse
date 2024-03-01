@@ -646,9 +646,15 @@ class Lime_RX_TX(Lime_RX, Lime_TX):
         RX_to_TX = queue.Queue()
         self.rx_node = RX_Node(self, TX_to_RX, RX_to_TX)
         self.tx_node = TX_Node(self, TX_to_RX, RX_to_TX)
+        if self.full_duplex:
+            self.rx_node.start()
+            self.tx_node.start()
         return self
         
     def __exit__(self, *args, **kwargs):
+        if self.full_duplex:
+            self.rx_node.stop()
+            self.tx_node.stop()
         Lime_RX.__exit__(self, retain_sdr=True)
         Lime_TX.__exit__(self)
             
