@@ -12,7 +12,8 @@ from matplotlib.animation import FuncAnimation
 plt.style.use('dark_background')
 
 from abc import ABC, abstractmethod
-import threading
+from dataclasses import dataclass
+import threading, queue
 
 class ShiftFrequency():
     def __init__(self, sample_rate, frequency, num_samps):
@@ -187,8 +188,6 @@ class Transmitter(ABC):
         self.tx_antenna = tx_antenna
         self.tx_gain = tx_gain
         
-        self.tx_node = TX_Node(self)
-        
     @abstractmethod
     def send(self, packet: Packet):
         pass
@@ -226,8 +225,6 @@ class Receiver(ABC):
         self.freq_correction = freq_correction
         
         self.read_buffer = np.array([0] * read_buffer_size, np.complex64)
-        
-        self.rx_node = RX_Node(self)
     
     @abstractmethod    
     def read(self):
@@ -601,13 +598,16 @@ class Dispatcher():
         self.preamble = np.array([1,0,1,0,0,0,1,1]).astype(int)
     
     def action(self, message):
-        # TODO: Make this a function
-        # array_string = np.array2string(message).replace(' ', '')[1:-1]
-        # print(array_string)
         if np.array_equal(message[:8],self.preamble):
             print(f'Data received:  {tuple(message[8:])}')
         else:
             print('Preamble missing')
+
+@dataclass
+class NodeMessage():
+    type: str
+    data: np.ndarray
+
                   
 class Lime_RX_TX(Lime_RX, Lime_TX):
     def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna):
@@ -617,6 +617,8 @@ class Lime_RX_TX(Lime_RX, Lime_TX):
     def __enter__(self):
         Lime_RX.__enter__(self)
         Lime_TX.__enter__(self)
+        self.rx_node = RX_Node(self)
+        self.tx_node = TX_Node(self)
         return self
         
     def __exit__(self, *args, **kwargs):
@@ -631,6 +633,8 @@ class UHD_RX_TX(UHD_RX, UHD_TX):
     def __enter__(self):
         UHD_RX.__enter__(self)
         UHD_TX.__enter__(self)
+        self.rx_node = RX_Node(self)
+        self.tx_node = TX_Node(self)
         return self
         
     def __exit__(self, *args, **kwargs):
