@@ -17,6 +17,7 @@ import threading, queue
 from func_timeout import func_timeout, FunctionTimedOut
 from loguru import logger
 import sys
+import tqdm
 
 logger.remove()
 logger.add(sys.stderr, level="DEBUG")
@@ -302,23 +303,25 @@ class Receiver(ABC):
         shift_frequency = ShiftFrequency(self.sample_rate, frequency_shift, buffer_size)
         signal = []
         captured_signals = []
-        try:
-            while True:
-                sample = self.read()
-                sample = sample * shift_frequency.next()
-                # sample = Filter.low_pass_filter(sample, self.sample_rate, 15000)
-                if np.max(np.abs(sample)) >= threshold:
-                    logger.debug("Buffer found signal present")
-                    signal.append(sample)
-                else:
-                    if len(signal) > 0:
-                        logger.debug("Writing signal to captured signals")
-                        captured_signals.append(Segment(np.concatenate(signal), self.sample_rate))
-                        if not continuous:
-                            break
-                        signal = []
-        except KeyboardInterrupt:
-            logger.debug("Exiting capture signal")
+        with tqdm(total=100, desc="Progress", unit="iter") as pbar:
+            try:
+                while True:
+                    sample = self.read()
+                    sample = sample * shift_frequency.next()
+                    # sample = Filter.low_pass_filter(sample, self.sample_rate, 15000)
+                    if np.max(np.abs(sample)) >= threshold:
+                        pbar.update(1)
+                        signal.append(sample)
+                    else:
+                        if len(signal) > 0:
+                            logger.debug("Writing signal to captured signals")
+                            pbar.reset()
+                            captured_signals.append(Segment(np.concatenate(signal), self.sample_rate))
+                            if not continuous:
+                                break
+                            signal = []
+            except KeyboardInterrupt:
+                logger.debug("Exiting capture signal")
         
         logger.debug('Returning captured signals')
         return captured_signals
