@@ -14,7 +14,6 @@ plt.style.use('dark_background')
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import threading, queue
-from func_timeout import func_timeout, FunctionTimedOut
 from loguru import logger
 import sys
 
