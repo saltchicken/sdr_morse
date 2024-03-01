@@ -316,7 +316,7 @@ class Receiver(ABC):
                     logger.info(f"Signal contains {len(captured_signal.data)} samples")
                     captured_signals.append(captured_signal)
                     break
-        if kill_rx:
+        if kill_rx.is_set():
             logger.debug('Exiting capture signal')
             return None
         else:
