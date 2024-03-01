@@ -300,28 +300,23 @@ class Receiver(ABC):
         self.set_buffer_size(buffer_size)
         shift_frequency = ShiftFrequency(self.sample_rate, frequency_shift, buffer_size)
         signal = []
-        captured_signals = []
         while not kill_rx.is_set():
             sample = self.read()
             sample = sample * shift_frequency.next()
-            # sample = Filter.low_pass_filter(sample, self.sample_rate, 15000)
             if np.max(np.abs(sample)) >= threshold:
                 if len(signal) == 0:
                     logger.info(f"Signal found. Writing...")
                 signal.append(sample)
             else:
                 if len(signal) > 0:
-                    logger.debug("Writing signal to captured signals")
-                    captured_signal = Segment(np.concatenate(signal), self.sample_rate)
-                    logger.info(f"Signal contains {len(captured_signal.data)} samples")
-                    captured_signals.append(captured_signal)
                     break
-        if kill_rx.is_set():
+        if kill_rx.is_set() and len(signal) == 0:
             logger.debug('Exiting capture signal')
             return None
         else:
-            logger.debug('Returning captured signals')
-            return captured_signals[0]
+            captured_signal = Segment(np.concatenate(signal), self.sample_rate)
+            logger.info(f"Returning captured signal. Signal contains {len(captured_signal.data)} samples")
+            return captured_signal
         
     def capture_signal_decode(self, kill_rx, symbol_length=10000):
         # try:
@@ -583,7 +578,7 @@ class TX_Node(threading.Thread):
             if RX_to_TX_data is None:
                 time.sleep(0.1)
                 continue
-            logger.debug('TX_Node received ', RX_to_TX_data)
+            logger.debug(f"TX_Node received {RX_to_TX_data}")
             
         logger.debug('Killing tx_node')
         
