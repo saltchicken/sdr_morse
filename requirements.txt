@@ -1,0 +1,3 @@
+SoapySDR
+uhd
+func-timeout
