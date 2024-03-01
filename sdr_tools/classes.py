@@ -575,6 +575,8 @@ class TX_Node(threading.Thread):
     def stop(self):
         # TODO: Make sure that tx_node is running
         self.kill_tx.set()
+        # TODO: Probably a better way to ensure that self.RX_to_TX.get() doesn't block stop
+        self.RX_to_TX.put(None)
         self.join()
         print('TX thread successfully exited')
         
