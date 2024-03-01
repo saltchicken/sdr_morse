@@ -16,6 +16,7 @@ from dataclasses import dataclass
 import threading, queue
 from func_timeout import func_timeout, FunctionTimedOut
 from loguru import logger
+import sys
 
 logger.remove()
 logger.add(sys.stderr, level="DEBUG")
