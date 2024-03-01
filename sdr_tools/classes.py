@@ -14,6 +14,7 @@ plt.style.use('dark_background')
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import threading, queue
+from func_timeout import func_timeout, FunctionTimedOut
 
 class ShiftFrequency():
     def __init__(self, sample_rate, frequency, num_samps):
@@ -318,7 +319,11 @@ class Receiver(ABC):
         return captured_signals
         
     def capture_signal_decode(self, symbol_length=10000):
-        received = self.capture_signal()[0]
+        try:
+            received = func_timeout(5, self.capture_signal()[0])
+        except FunctionTimedOut:
+            print("Capture Signal timedout")
+            return None
         decoded = Decoded(received, symbol_length)
         return decoded
 
@@ -595,7 +600,8 @@ class RX_Node(threading.Thread):
         while not self.kill_rx.is_set():
             print('RX_Node listening')
             decoded = self.receiver.capture_signal_decode()
-            self.dispatcher.action(decoded.decoded)
+            if decoded:
+                self.dispatcher.action(decoded.decoded)
         print('Killing rx_node')
         
     def stop(self):
