@@ -313,7 +313,7 @@ class Receiver(ABC):
                     if len(signal) > 0:
                         logger.debug("Writing signal to captured signals")
                         captured_signal = Segment(np.concatenate(signal), self.sample_rate)
-                        logger.info(f"Signal contains {len(captured_signal)} samples")
+                        logger.info(f"Signal contains {len(captured_signal.data)} samples")
                         captured_signals.append(captured_signal)
                         if not continuous:
                             break
