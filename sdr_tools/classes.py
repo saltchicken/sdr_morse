@@ -17,7 +17,7 @@ import threading, queue
 from func_timeout import func_timeout, FunctionTimedOut
 from loguru import logger
 import sys
-import tqdm
+from tqdm import tqdm
 
 logger.remove()
 logger.add(sys.stderr, level="DEBUG")
