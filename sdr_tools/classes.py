@@ -168,7 +168,7 @@ class Decoded(Segment):
         self.demod.data = self.demod.data[symbol_length//2:] # Offset the sample. Poverty synchronization
         self.resample = Resample(self.demod, 1, symbol_length)
         self.decoded = self.decode_segment(self.resample)
-        logger.debug(self.decoded)
+        # logger.debug(self.decoded)
         
     def plot_decoded(self):
         plt.figure(figsize=(10, 8))
@@ -627,6 +627,7 @@ class ReceiverDispatcher(Dispatcher):
         super().__init__(TX_to_RX, RX_to_TX)
         
     def action(self, message):
+        logger.debug(f"Decoded signal: {self.decoded})
         if np.array_equal(message[:8],self.preamble):
             logger.debug(f'Data received:  {tuple(message[8:])}')
             self.RX_to_TX.put('yes')
