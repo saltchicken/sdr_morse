@@ -627,7 +627,7 @@ class ReceiverDispatcher(Dispatcher):
         super().__init__(TX_to_RX, RX_to_TX)
         
     def action(self, message):
-        logger.debug(f"Decoded signal: {self.decoded}")
+        logger.debug(f"Decoded signal: {message}")
         if np.array_equal(message[:8],self.preamble):
             logger.debug(f'Data received:  {tuple(message[8:])}')
             self.RX_to_TX.put('yes')
