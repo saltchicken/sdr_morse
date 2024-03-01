@@ -292,7 +292,7 @@ class Receiver(ABC):
         
         plt.show()
         
-    def capture_signal(self, threshold=0.005, buffer_size=1024, frequency_shift=40000, continuous=False):
+    def capture_signal(self, kill_rx, threshold=0.005, buffer_size=1024, frequency_shift=40000, continuous=False):
         # Clear the read_buffer of Soapy Device
         # TODO: This might be a problem when using devices other than LimeSDR
         # self.set_buffer_size(int(4e6))
@@ -303,7 +303,7 @@ class Receiver(ABC):
         signal = []
         captured_signals = []
         try:
-            while True:
+            while not kill_rx.is_set():
                 sample = self.read()
                 sample = sample * shift_frequency.next()
                 # sample = Filter.low_pass_filter(sample, self.sample_rate, 15000)
@@ -326,13 +326,14 @@ class Receiver(ABC):
         logger.debug('Returning captured signals')
         return captured_signals
         
-    def capture_signal_decode(self, symbol_length=10000):
-        try:
-            received = func_timeout(5, self.capture_signal)
-            received = received[0]
-        except FunctionTimedOut:
-            logger.debug("Capture Signal timedout")
-            return None
+    def capture_signal_decode(self, kill_rx, symbol_length=10000):
+        # try:
+            # received = func_timeout(5, self.capture_signal)
+            # received = received[0]
+        # except FunctionTimedOut:
+        #     logger.debug("Capture Signal timedout")
+        #     return None
+        received = self.capture_signal(kill_rx=kill_rx)
         decoded = Decoded(received, symbol_length)
         return decoded
 
@@ -608,9 +609,10 @@ class RX_Node(threading.Thread):
         logger.debug('Starting rx node')
         while not self.kill_rx.is_set():
             logger.debug('RX_Node listening')
-            decoded = self.receiver.capture_signal_decode()
+            decoded = self.receiver.capture_signal_decode(self.kill_rx)
             if decoded:
                 self.dispatcher.action(decoded.decoded)
+
         logger.debug('Killing rx_node')
         
     def stop(self):
