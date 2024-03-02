@@ -606,7 +606,7 @@ class TX_Node(threading.Thread):
         logger.debug('Starting tx_node')
         while not self.kill_tx.is_set():
             RX_to_TX_data = self.RX_to_TX.get()
-            self.dispatcher.action(RX_to_TX_data)
+            ret = self.dispatcher.action(RX_to_TX_data)
         logger.debug('Killing tx_node')
         
     def stop(self):
@@ -670,9 +670,12 @@ class TransmitterDispatcher(Dispatcher):
     
     def action(self, message):
         logger.debug(f"TX_Node received {message}")
+        if message == None:
+            return None
         if message.type == 'command':
-            # TODO: This needs to be unique to the transceiver
+            # TODO: This needs to be unique to the transceiver. IMPORTANT
             self.transmitter.send(SYN_FM_Packet(40000))
+            return True
         
 
 @dataclass
