@@ -123,7 +123,33 @@ class FM_Packet(Packet):
             transmission_signal.imag[start_index:end_index] = symbol_wave_imag[0:symbol_length]
         transmission_segment = Segment(transmission_signal, sample_rate)
         return transmission_segment
+
+class SYN_FM_Packet(FM_Packet):
+    def __init__(self, channel_freq):
+        # super().__init__(message, channel_freq)
+        self.preamble = np.array([1,0,1,0,0,0,1,1]).astype(int)
+        self.id = np.array([1, 1, 0, 0]).astype(int)
+        # TODO: This should not be repeated in FM_Packet nor should it be used. Need setting changed from exterior
+        sample_rate = 2e6
+        freq = channel_freq
+        freq_deviation = 10000
+        symbol_length = 10000
+        self.generate_binary_string()
+        segment = self.generate_fm_packet(self.binary_string, sample_rate, freq, freq_deviation, symbol_length)
+        Packet().__init__(segment)
         
+    def generate_binary_string(self):
+        result = np.append(self.preamble, self.id)
+        count_ones = np.count_nonzero(result == 1)
+        # TODO: Note somewhere this is even parity
+        if count_ones % 2 == 0:
+            even_parity_bit = np.array([0])
+        else:
+            even_parity_bit = np.array([1])
+        result_with_parity = np.append(result, even_parity_bit)
+        self.binary_string = ''.join([str(x) for x in result_with_parity])
+        logger.debug(f"Created FM Packet with binary string: {self.binary_string}")
+
 class Filter(Segment):
     def __init__(self, segment: Segment):
         super().__init__(segment.data, segment.sample_rate)
@@ -620,6 +646,7 @@ class RX_Node(threading.Thread):
 
 class Dispatcher():
     def __init__(self, TX_to_RX, RX_to_TX):
+        # TODO: This is not needed. Especially preamble but maybe whole base class.
         self.preamble = np.array([1,0,1,0,0,0,1,1]).astype(int)
         self.TX_to_RX = TX_to_RX
         self.RX_to_TX = RX_to_TX
