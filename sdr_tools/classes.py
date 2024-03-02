@@ -599,7 +599,7 @@ class TX_Node(threading.Thread):
         self.TX_to_RX = TX_to_RX
         self.RX_to_TX = RX_to_TX
         
-        self.dispatcher = TransmitterDispatcher(self.TX_to_RX, self.RX_to_TX)
+        self.dispatcher = TransmitterDispatcher(self.transmitter, self.TX_to_RX, self.RX_to_TX)
         
     def run(self):
         self.kill_tx = threading.Event()
@@ -664,11 +664,15 @@ class ReceiverDispatcher(Dispatcher):
             logger.debug('Preamble missing')
             
 class TransmitterDispatcher(Dispatcher):
-    def __init__(self, TX_to_RX, RX_to_TX):
+    def __init__(self, transmitter, TX_to_RX, RX_to_TX):
         super().__init__(TX_to_RX, RX_to_TX)
+        self.transmitter = transmitter
     
     def action(self, message):
         logger.debug(f"TX_Node received {message}")
+        if message.type == 'command':
+            # TODO: This needs to be unique to the transceiver
+            self.transmitter.send(SYN_FM_Packet(40000))
         
 
 @dataclass
