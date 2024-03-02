@@ -671,6 +671,11 @@ class ReceiverDispatcher(Dispatcher):
             if np.array_equal(received_id, TCP_Protocol.syn_id):
                 logger.info("Received SYN Packet")
                 self.RX_to_TX.put(NodeMessage('command', 'send syn_ack'))
+            elif np.array_equal(received_id, TCP_Protocol.syn_ack_id):
+                logger.info("Received SYN_ACK Packet")
+                self.RX_to_TX.put(NodeMessage('command', 'send ack'))
+            else:
+                logger.debug('Unrecognized ID found')
         else:
             logger.debug('Preamble missing')
             
@@ -685,10 +690,13 @@ class TransmitterDispatcher(Dispatcher):
         match message:
             case None:
                 return None
-            case NodeMessage('command', 'send syn_ack'):
+            case NodeMessage('command', 'send syn_ack'): # TODO: Freeze this class in initialiation to prevent constantly making the object to check
                 logger.info('TX_Node sending SYN ACK Packet')
                 self.transmitter.send(self.protocol.syn_ack)
                 return True
+            case NodeMessage('command', 'send ack'):
+                logger.info('TX Node sending ACK Packet')
+                self.transmitter.send(self.protocol.ack)
         
 @dataclass
 class NodeMessage():
