@@ -668,7 +668,7 @@ class ReceiverDispatcher(Dispatcher):
         if np.array_equal(received_preamble, TCP_Protocol.preamble):
             # logger.debug(f'Data received:  {message[8:]}')
             logger.debug(f"ID received: {received_id}")
-            if received_id == TCP_Protocol.syn_id:
+            if np.array_equal(received_id, TCP_Protocol.syn_id):
                 logger.info("Received SYN Packet")
                 self.RX_to_TX.put(NodeMessage('command', 'send syn_ack'))
         else:
