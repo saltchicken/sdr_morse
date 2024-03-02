@@ -678,7 +678,7 @@ class TransmitterDispatcher(Dispatcher):
         logger.debug(f"TX_Node received {message}")
         if message == None:
             return None
-        if message.type == 'command' and np.array_equal(message.id, np.array([1, 1, 0, 0])): # TODO: Improve designation of id
+        if message.type == 'command' and np.array_equal(message.id, TCP_Protocol.syn_id):
             logger.info('SYN Packet Received')
             self.transmitter.send(self.protocol.syn_ack)
             return True
