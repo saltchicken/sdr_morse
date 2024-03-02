@@ -132,10 +132,12 @@ class TCP_Protocol():
     preamble = np.array([1,0,1,0,0,0,1,1]).astype(int)
     syn_id = np.array([1,1,0,0]).astype(int)
     syn_ack_id = np.array([1,1,0,1]).astype(int)
+    ack_id = np.array([1,1,1,0]).astype(int)
     def __init__(self, channel_freq):
         self.channel_freq = channel_freq
         self.syn = TCP_Packet(self.channel_freq, TCP_Protocol.preamble, TCP_Protocol.syn_id)
         self.syn_ack = TCP_Packet(self.channel_freq, TCP_Protocol.preamble, TCP_Protocol.syn_ack_id)
+        self.ack = TCP_Packet(self.channel_freq, TCP_Protocol.preamble, TCP_Protocol.ack_id)
         
         self.syn_flag = False
         
