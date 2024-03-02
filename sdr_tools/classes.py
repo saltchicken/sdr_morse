@@ -683,7 +683,7 @@ class TransmitterDispatcher(Dispatcher):
             return None
         if message.type == 'command' and np.array_equal(message.id, np.array([1, 1, 0, 0])): # TODO: Improve designation of id
             logger.info('SYN Packet Received')
-            self.transmitter.send(TCP_Protocol.syn_ack)
+            self.transmitter.send(self.protocol.syn_ack)
             return True
         
 
