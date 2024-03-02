@@ -136,7 +136,7 @@ class SYN_FM_Packet(FM_Packet):
         symbol_length = 10000
         self.generate_binary_string()
         segment = self.generate_fm_packet(self.binary_string, sample_rate, freq, freq_deviation, symbol_length)
-        Packet.__init__(segment)
+        Packet.__init__(self, segment)
         
     def generate_binary_string(self):
         result = np.append(self.preamble, self.id)
