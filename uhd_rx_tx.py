@@ -1,6 +1,11 @@
-from sdr_tools.classes import UHD_RX_TX, TCP_Protocol
+from sdr_tools.classes import UHD_RX_TX, TCP_Protocol, logger
+
+import sys
 
 from IPython import embed
+
+logger.remove()
+logger.add(sys.stderr, level="DEBUG")
 
 # apply settings
 sample_rate = 2e6

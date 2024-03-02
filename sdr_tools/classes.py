@@ -17,9 +17,6 @@ from loguru import logger
 import sys
 plt.style.use('dark_background')
 
-logger.remove()
-logger.add(sys.stderr, level="DEBUG")
-
 class ShiftFrequency():
     def __init__(self, sample_rate, frequency, num_samps):
         self.i = 0
