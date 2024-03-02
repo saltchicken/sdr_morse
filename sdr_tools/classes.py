@@ -332,7 +332,7 @@ class Receiver(ABC):
         # self.set_buffer_size(int(4e6))
         # self.read()
         
-        self.set_buffer_size(buffer_size)
+        # self.set_buffer_size(buffer_size)
         shift_frequency = ShiftFrequency(self.sample_rate, channel_freq, buffer_size)
         signal = []
         while not kill_rx.is_set():
