@@ -15,4 +15,4 @@ tx_freq = 434e6 # center_freq
 with Lime_RX_TX(sample_rate, rx_freq, tx_freq, antenna, 'BAND2', rx_channel, tx_channel, full_duplex=True) as transceiver:
     protocol = TCP_Protocol(channel_freq=40000)
     fm_packet = protocol.syn
-    embed()
+    embed(quiet=True)

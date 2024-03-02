@@ -16,4 +16,4 @@ tx_freq = 434e6 # center_freq
 with UHD_RX_TX(sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna, rx_channel, tx_channel, full_duplex=True) as transceiver:
     protocol = TCP_Protocol(channel_freq=25000)
     fm_packet = protocol.syn
-    embed()
+    embed(quiet=True)
