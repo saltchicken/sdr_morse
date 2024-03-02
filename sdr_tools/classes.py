@@ -327,7 +327,7 @@ class Receiver(ABC):
         plt.show()
         
     def capture_signal(self, kill_rx, channel_freq, threshold=0.005):
-        shift_frequency = ShiftFrequency(self.sample_rate, channel_freq, buffer_size)
+        shift_frequency = ShiftFrequency(self.sample_rate, channel_freq, len(self.read_buffer))
         signal = []
         while not kill_rx.is_set():
             sample = self.read()
