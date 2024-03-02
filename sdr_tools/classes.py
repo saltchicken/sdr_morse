@@ -79,30 +79,34 @@ class Packet(Segment):
     def __init__(self, segment: Segment):
         super().__init__(segment.data, segment.sample_rate)
 
+
+@dataclass
+class FM_Settings:
+    sample_rate: int = int(2e6)
+    freq_deviation: int = 10000
+    symbol_length: int = 10000   
+    
 class FM_Packet(Packet):
-    def __init__(self, message, channel_freq):
-        sample_rate = 2e6
-        freq = channel_freq
-        freq_deviation = 10000
-        symbol_length = 10000
-        segment = self.generate_fm_packet(message, sample_rate, freq, freq_deviation, symbol_length)
+    def __init__(self, binary_string, channel_freq):
+        settings = FM_Settings()
+        segment = self.generate_fm_packet(binary_string, channel_freq, settings)
         super().__init__(segment)
     
-    def generate_fm_packet(self, binary_string, sample_rate, carrier_freq, deviation_freq, symbol_length):
-        frequency = carrier_freq - deviation_freq
-        second_frequency = carrier_freq + deviation_freq
+    def generate_fm_packet(self, binary_string, channel_freq, settings: FM_Settings):
+        frequency = channel_freq - settings.freq_deviation
+        second_frequency = channel_freq + settings.freq_deviation
         num_symbols = len(binary_string)
-        duration = (num_symbols * symbol_length) / sample_rate
-        t = np.arange(0, duration, 1 / sample_rate)
-        logger.debug(f"Num symbols: {num_symbols}| Symbol length: {symbol_length}")
+        duration = (num_symbols * settings.symbol_length) / settings.sample_rate
+        t = np.arange(0, duration, 1 / settings.sample_rate)
+        logger.debug(f"Num symbols: {num_symbols}| Symbol length: {settings.symbol_length}")
         transmission_signal = np.zeros(len(t), dtype=np.complex64)
-        time_interval = 1 / sample_rate
+        time_interval = 1 / settings.sample_rate
         
         # TODO: Make more efficient. Calc phase shift right after symbol wave. Use 'np.exp()'
         for i, bit in enumerate(binary_string):
-            start_index = symbol_length * i
-            end_index = start_index + symbol_length
-            symbol_time = symbol_length * time_interval
+            start_index = settings.symbol_length * i
+            end_index = start_index + settings.symbol_length
+            symbol_time = settings.symbol_length * time_interval
             if i == 0:
                 phase_shift = 0.0
             elif binary_string[i-1] == '0':
@@ -119,23 +123,32 @@ class FM_Packet(Packet):
                 symbol_wave_imag = np.cos(2 * np.pi * second_frequency * t + (phase_shift - (np.pi / 2)))
             else:
                 logger.debug("Something is wrong with the binary_string")
-            transmission_signal.real[start_index:end_index] = symbol_wave_real[0:symbol_length]
-            transmission_signal.imag[start_index:end_index] = symbol_wave_imag[0:symbol_length]
-        transmission_segment = Segment(transmission_signal, sample_rate)
+            transmission_signal.real[start_index:end_index] = symbol_wave_real[0:settings.symbol_length]
+            transmission_signal.imag[start_index:end_index] = symbol_wave_imag[0:settings.symbol_length]
+        transmission_segment = Segment(transmission_signal, settings.sample_rate)
         return transmission_segment
+
+class TCP_Protocol():
+    def __init__(self):
+        self.syn = SYN_FM_Packet()
+        self.syn_ack = SYN_ACK_FM_Packet()
+        
+        self.syn_flag = False
+        
+class TCP_Packet():
+    def __init__(self, preamble, id):
+        pass
+    
+     
 
 class SYN_FM_Packet(FM_Packet):
     def __init__(self, channel_freq):
         # super().__init__(message, channel_freq)
         self.preamble = np.array([1,0,1,0,0,0,1,1]).astype(int)
         self.id = np.array([1, 1, 0, 0]).astype(int)
-        # TODO: This should not be repeated in FM_Packet nor should it be used. Need setting changed from exterior
-        sample_rate = 2e6
-        freq = channel_freq
-        freq_deviation = 10000
-        symbol_length = 10000
+        settings = FM_Settings()
         self.generate_binary_string()
-        segment = self.generate_fm_packet(self.binary_string, sample_rate, freq, freq_deviation, symbol_length)
+        segment = self.generate_fm_packet(self.binary_string, channel_freq, settings)
         Packet.__init__(self, segment)
         
     def generate_binary_string(self):
@@ -155,13 +168,9 @@ class SYN_ACK_FM_Packet(FM_Packet):
         # super().__init__(message, channel_freq)
         self.preamble = np.array([1,0,1,0,0,0,1,1]).astype(int)
         self.id = np.array([1, 1, 0, 1]).astype(int)
-        # TODO: This should not be repeated in FM_Packet nor should it be used. Need setting changed from exterior
-        sample_rate = 2e6
-        freq = channel_freq
-        freq_deviation = 10000
-        symbol_length = 10000
+        settings = FM_Settings()
         self.generate_binary_string()
-        segment = self.generate_fm_packet(self.binary_string, sample_rate, freq, freq_deviation, symbol_length)
+        segment = self.generate_fm_packet(self.binary_string, channel_freq, settings)
         Packet.__init__(self, segment)
         
     def generate_binary_string(self):
@@ -767,4 +776,4 @@ class UHD_RX_TX(UHD_RX, UHD_TX):
         UHD_RX.__exit__(self)
         UHD_TX.__exit__(self)
         
-        
+    
