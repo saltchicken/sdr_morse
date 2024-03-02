@@ -573,18 +573,14 @@ class TX_Node(threading.Thread):
         self.TX_to_RX = TX_to_RX
         self.RX_to_TX = RX_to_TX
         
-        # TODO: Needs a Dispatcher
+        self.dispatcher = TransmitterDispatcher(self.TX_to_RX, self.RX_to_TX)
         
     def run(self):
         self.kill_tx = threading.Event()
         logger.debug('Starting tx_node')
         while not self.kill_tx.is_set():
             RX_to_TX_data = self.RX_to_TX.get()
-            # if RX_to_TX_data is None:
-            #     time.sleep(0.1)
-            #     continue
-            logger.debug(f"TX_Node received {RX_to_TX_data}")
-            
+            self.dispatcher.action(RX_to_TX_data)
         logger.debug('Killing tx_node')
         
     def stop(self):
@@ -636,13 +632,17 @@ class ReceiverDispatcher(Dispatcher):
         logger.debug(f"Decoded signal: {message}")
         if np.array_equal(message[:8],self.preamble):
             logger.debug(f'Data received:  {message[8:]}')
-            self.RX_to_TX.put('yes')
+            self.RX_to_TX.put(NodeMessage('command', None))
         else:
             logger.debug('Preamble missing')
             
 class TransmitterDispatcher(Dispatcher):
     def __init__(self, TX_to_RX, RX_to_TX):
         super().__init__(TX_to_RX, RX_to_TX)
+    
+    def action(self, message):
+        logger.debug(f"TX_Node received {message}")
+        
 
 @dataclass
 class NodeMessage():
