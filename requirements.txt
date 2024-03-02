@@ -1,3 +1,2 @@
 SoapySDR
 uhd
-func-timeout
