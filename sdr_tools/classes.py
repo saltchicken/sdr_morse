@@ -690,7 +690,7 @@ class TransmitterDispatcher(Dispatcher):
             case None:
                 return None
             case NodeMessage('command', 'send syn_ack'): # TODO: Freeze this class in initialiation to prevent constantly making the object to check
-                logger.info('TX_Node sending SYN ACK Packet')
+                logger.debug('TX_Node sending SYN ACK Packet')
                 self.transmitter.send(self.protocol.syn_ack)
                 return True
             case NodeMessage('command', 'send ack'):
