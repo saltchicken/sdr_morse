@@ -676,7 +676,7 @@ class ReceiverDispatcher(Dispatcher):
             else:
                 logger.debug('Unrecognized ID found')
         else:
-            logger.debug('Preamble missing')
+            logger.warning('Preamble missing')
             
 class TransmitterDispatcher(Dispatcher):
     def __init__(self, transmitter, TX_to_RX, RX_to_TX):
