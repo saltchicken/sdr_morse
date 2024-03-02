@@ -149,6 +149,32 @@ class SYN_FM_Packet(FM_Packet):
         result_with_parity = np.append(result, even_parity_bit)
         self.binary_string = ''.join([str(x) for x in result_with_parity])
         logger.debug(f"Created FM Packet with binary string: {self.binary_string}")
+        
+class SYN_ACK_FM_Packet(FM_Packet):
+    def __init__(self, channel_freq):
+        # super().__init__(message, channel_freq)
+        self.preamble = np.array([1,0,1,0,0,0,1,1]).astype(int)
+        self.id = np.array([1, 1, 0, 1]).astype(int)
+        # TODO: This should not be repeated in FM_Packet nor should it be used. Need setting changed from exterior
+        sample_rate = 2e6
+        freq = channel_freq
+        freq_deviation = 10000
+        symbol_length = 10000
+        self.generate_binary_string()
+        segment = self.generate_fm_packet(self.binary_string, sample_rate, freq, freq_deviation, symbol_length)
+        Packet.__init__(self, segment)
+        
+    def generate_binary_string(self):
+        result = np.append(self.preamble, self.id)
+        count_ones = np.count_nonzero(result == 1)
+        # TODO: Note somewhere this is even parity
+        if count_ones % 2 == 0:
+            even_parity_bit = np.array([0])
+        else:
+            even_parity_bit = np.array([1])
+        result_with_parity = np.append(result, even_parity_bit)
+        self.binary_string = ''.join([str(x) for x in result_with_parity])
+        logger.debug(f"Created FM Packet with binary string: {self.binary_string}")
 
 class Filter(Segment):
     def __init__(self, segment: Segment):
@@ -659,7 +685,8 @@ class ReceiverDispatcher(Dispatcher):
         logger.debug(f"Decoded signal: {message}")
         if np.array_equal(message[:8],self.preamble):
             logger.debug(f'Data received:  {message[8:]}')
-            self.RX_to_TX.put(NodeMessage('command', None))
+            logger.debug(f"ID received: {message[8:12]}")
+            self.RX_to_TX.put(NodeMessage('command', message[8:12]))
         else:
             logger.debug('Preamble missing')
             
@@ -672,8 +699,8 @@ class TransmitterDispatcher(Dispatcher):
         logger.debug(f"TX_Node received {message}")
         if message == None:
             return None
-        if message.type == 'command':
-            # TODO: This needs to be unique to the transceiver. IMPORTANT
+        if message.type == 'command' and np.array_equal(message.id, np.array([1, 1, 0, 1])): # TODO: Improve designation of id
+            logger.info('SYN Packet Received')
             self.transmitter.send(SYN_FM_Packet(self.transmitter.tx_channel_freq))
             return True
         
@@ -681,7 +708,7 @@ class TransmitterDispatcher(Dispatcher):
 @dataclass
 class NodeMessage():
     type: str
-    data: np.ndarray
+    id: np.ndarray
                  
 class Lime_RX_TX(Lime_RX, Lime_TX):
     def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna, rx_channel_freq, tx_channel_freq, full_duplex=False):
