@@ -674,6 +674,8 @@ class ReceiverDispatcher(Dispatcher):
             elif np.array_equal(received_id, TCP_Protocol.syn_ack_id):
                 logger.info("Received SYN_ACK Packet")
                 self.RX_to_TX.put(NodeMessage('command', 'send ack'))
+            elif np.array_equal(received_id, TCP_Protocol.ack_id):
+                logger.info("Received ACK Packet")
             else:
                 logger.debug('Unrecognized ID found')
         else:
