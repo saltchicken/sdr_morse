@@ -131,8 +131,8 @@ class FM_Packet(Packet):
 class TCP_Protocol():
     def __init__(self, channel_freq):
         self.channel_freq = channel_freq
-        self.syn = TCP_Packet(self.channel_freq, np.array([1,0,1,0,0,0,1,1]).astype(int), np.array([1, 1, 0, 0]).astype(int))
-        self.syn_ack = TCP_Packet(self.channel_freq, np.array([1,0,1,0,0,0,1,1]).astype(int), np.array([1, 1, 0, 1]).astype(int))
+        self.syn = TCP_Packet(self.channel_freq, np.array([1,0,1,0,0,0,1,1]).astype(int), np.array([1,1,0,0]).astype(int))
+        self.syn_ack = TCP_Packet(self.channel_freq, np.array([1,0,1,0,0,0,1,1]).astype(int), np.array([1,1,0,1]).astype(int))
         
         self.syn_flag = False
         
@@ -443,7 +443,7 @@ class Lime_RX(Receiver):
         self.set_buffer_size(previous_buffer)
                
 class UHD_RX(Receiver):
-    def __init__(self, sample_rate, frequency, antenna, freq_correction=0, read_buffer_size=1024):
+    def __init__(self, sample_rate, frequency, antenna, freq_correction=0, read_buffer_size=2000):
         super().__init__(sample_rate, frequency, antenna, freq_correction, read_buffer_size)
         
     def __enter__(self):
@@ -686,7 +686,6 @@ class TransmitterDispatcher(Dispatcher):
             self.transmitter.send(self.protocol.syn_ack)
             return True
         
-
 @dataclass
 class NodeMessage():
     type: str
