@@ -674,7 +674,7 @@ class TransmitterDispatcher(Dispatcher):
             return None
         if message.type == 'command':
             # TODO: This needs to be unique to the transceiver. IMPORTANT
-            self.transmitter.send(SYN_FM_Packet(40000))
+            self.transmitter.send(SYN_FM_Packet(self.transmitter.tx_channel_freq))
             return True
         
 
@@ -684,9 +684,10 @@ class NodeMessage():
     data: np.ndarray
                  
 class Lime_RX_TX(Lime_RX, Lime_TX):
-    def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna, rx_channel_freq, full_duplex=False):
+    def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna, rx_channel_freq, tx_channel_freq, full_duplex=False):
         self.full_duplex = full_duplex
         self.rx_channel_freq = rx_channel_freq
+        self.tx_channel_freq = tx_channel_freq
         super().__init__(sample_rate, rx_freq, rx_antenna)
         super(Lime_TX, self).__init__(sample_rate, tx_freq, tx_antenna)
         
@@ -712,9 +713,10 @@ class Lime_RX_TX(Lime_RX, Lime_TX):
         Lime_TX.__exit__(self)
             
 class UHD_RX_TX(UHD_RX, UHD_TX):
-    def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna, rx_channel_freq, full_duplex=False):
+    def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna, rx_channel_freq, tx_channel_freq, full_duplex=False):
         self.full_duplex = full_duplex
         self.rx_channel_freq = rx_channel_freq
+        self.tx_channel_freq = tx_channel_freq
         super().__init__(sample_rate, rx_freq, rx_antenna)
         super(UHD_TX, self).__init__(sample_rate, tx_freq, tx_antenna)
         

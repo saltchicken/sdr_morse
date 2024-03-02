@@ -9,6 +9,7 @@ rx_antenna = ''
 tx_antenna = ''
 
 rx_channel = 40000
+tx_channel = 25000
 
 tx_freq = 434e6 # center_freq
 
