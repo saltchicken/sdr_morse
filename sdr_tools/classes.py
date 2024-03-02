@@ -663,10 +663,14 @@ class ReceiverDispatcher(Dispatcher):
         
     def action(self, message):
         logger.debug(f"Decoded signal: {message}")
-        if np.array_equal(message[:8],TCP_Protocol.preamble):
-            logger.debug(f'Data received:  {message[8:]}')
-            logger.debug(f"ID received: {message[8:12]}")
-            self.RX_to_TX.put(NodeMessage('command', message[8:12]))
+        received_preamble = message[:8]
+        received_id = message[8:12]
+        if np.array_equal(received_preamble, TCP_Protocol.preamble):
+            # logger.debug(f'Data received:  {message[8:]}')
+            logger.debug(f"ID received: {received_id}")
+            if received_id == TCP_Protocol.syn_id:
+                logger.info("Received SYN Packet")
+                self.RX_to_TX.put(NodeMessage('command', 'send syn_ack'))
         else:
             logger.debug('Preamble missing')
             
@@ -680,15 +684,15 @@ class TransmitterDispatcher(Dispatcher):
         logger.debug(f"TX_Node received {message}")
         if message == None:
             return None
-        if message.type == 'command' and np.array_equal(message.id, TCP_Protocol.syn_id):
-            logger.info('SYN Packet Received')
+        if message.type == 'command' and message.id == 'send syn_ack':
+            logger.info('TX_Node sending SYN ACK Packet')
             self.transmitter.send(self.protocol.syn_ack)
             return True
         
 @dataclass
 class NodeMessage():
     type: str
-    id: np.ndarray
+    id: str
                  
 class Lime_RX_TX(Lime_RX, Lime_TX):
     def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna, rx_channel_freq, tx_channel_freq, full_duplex=False):
