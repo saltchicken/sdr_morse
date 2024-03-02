@@ -336,7 +336,7 @@ class Receiver(ABC):
             sample = sample * shift_frequency.next()
             if np.max(np.abs(sample)) >= threshold:
                 if len(signal) == 0:
-                    logger.info(f"Signal found. Writing...")
+                    logger.debug(f"Signal found. Writing...")
                 signal.append(sample)
             else:
                 if len(signal) > 0:
@@ -346,7 +346,7 @@ class Receiver(ABC):
             return None
         else:
             captured_signal = Segment(np.concatenate(signal), self.sample_rate)
-            logger.info(f"Returning captured signal. Signal contains {len(captured_signal.data)} samples")
+            logger.debug(f"Returning captured signal. Signal contains {len(captured_signal.data)} samples")
             return captured_signal
         
     def capture_signal_decode(self, kill_rx, channel_freq, symbol_length=10000):
