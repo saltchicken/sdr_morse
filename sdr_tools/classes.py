@@ -129,28 +129,21 @@ class FM_Packet(Packet):
         return transmission_segment
 
 class TCP_Protocol():
-    def __init__(self):
-        self.syn = SYN_FM_Packet()
-        self.syn_ack = SYN_ACK_FM_Packet()
+    def __init__(self, channel_freq):
+        self.channel_freq = channel_freq
+        self.syn = TCP_Packet(self.channel_freq, np.array([1,0,1,0,0,0,1,1]).astype(int), np.array([1, 1, 0, 0]).astype(int))
+        self.syn_ack = TCP_Packet(self.channel_freq, np.array([1,0,1,0,0,0,1,1]).astype(int), np.array([1, 1, 0, 1]).astype(int))
         
         self.syn_flag = False
         
-class TCP_Packet():
-    def __init__(self, preamble, id):
-        pass
+class TCP_Packet(FM_Packet):
+    def __init__(self, channel_freq, preamble, id):
+        self.channel_freq = channel_freq
+        self.preamble = preamble
+        self.id = id
+        self.binary_string = self.generate_binary_string()
+        super().__init__(self.binary_string, self.channel_freq)
     
-     
-
-class SYN_FM_Packet(FM_Packet):
-    def __init__(self, channel_freq):
-        # super().__init__(message, channel_freq)
-        self.preamble = np.array([1,0,1,0,0,0,1,1]).astype(int)
-        self.id = np.array([1, 1, 0, 0]).astype(int)
-        settings = FM_Settings()
-        self.generate_binary_string()
-        segment = self.generate_fm_packet(self.binary_string, channel_freq, settings)
-        Packet.__init__(self, segment)
-        
     def generate_binary_string(self):
         result = np.append(self.preamble, self.id)
         count_ones = np.count_nonzero(result == 1)
@@ -160,30 +153,9 @@ class SYN_FM_Packet(FM_Packet):
         else:
             even_parity_bit = np.array([1])
         result_with_parity = np.append(result, even_parity_bit)
-        self.binary_string = ''.join([str(x) for x in result_with_parity])
-        logger.debug(f"Created FM Packet with binary string: {self.binary_string}")
-        
-class SYN_ACK_FM_Packet(FM_Packet):
-    def __init__(self, channel_freq):
-        # super().__init__(message, channel_freq)
-        self.preamble = np.array([1,0,1,0,0,0,1,1]).astype(int)
-        self.id = np.array([1, 1, 0, 1]).astype(int)
-        settings = FM_Settings()
-        self.generate_binary_string()
-        segment = self.generate_fm_packet(self.binary_string, channel_freq, settings)
-        Packet.__init__(self, segment)
-        
-    def generate_binary_string(self):
-        result = np.append(self.preamble, self.id)
-        count_ones = np.count_nonzero(result == 1)
-        # TODO: Note somewhere this is even parity
-        if count_ones % 2 == 0:
-            even_parity_bit = np.array([0])
-        else:
-            even_parity_bit = np.array([1])
-        result_with_parity = np.append(result, even_parity_bit)
-        self.binary_string = ''.join([str(x) for x in result_with_parity])
-        logger.debug(f"Created FM Packet with binary string: {self.binary_string}")
+        binary_string = ''.join([str(x) for x in result_with_parity])
+        logger.debug(f"Created FM Packet with binary string: {binary_string}")
+        return binary_string   
 
 class Filter(Segment):
     def __init__(self, segment: Segment):
@@ -703,6 +675,7 @@ class TransmitterDispatcher(Dispatcher):
     def __init__(self, transmitter, TX_to_RX, RX_to_TX):
         super().__init__(TX_to_RX, RX_to_TX)
         self.transmitter = transmitter
+        self.protocol = TCP_Protocol(channel_freq=self.transmitter.tx_channel_freq)
     
     def action(self, message):
         logger.debug(f"TX_Node received {message}")
@@ -710,7 +683,7 @@ class TransmitterDispatcher(Dispatcher):
             return None
         if message.type == 'command' and np.array_equal(message.id, np.array([1, 1, 0, 0])): # TODO: Improve designation of id
             logger.info('SYN Packet Received')
-            self.transmitter.send(SYN_ACK_FM_Packet(self.transmitter.tx_channel_freq))
+            self.transmitter.send(TCP_Protocol.syn_ack)
             return True
         
 
