@@ -269,6 +269,7 @@ class Receiver(ABC):
         pass
     
     def set_buffer_size(self, buffer_size):
+        logger.debug(f"Setting read_buffer_size to {buffer_size}")
         self.read_buffer = np.zeros(buffer_size, np.complex64)
     
     def getSegment(self, num_samps=2048000, buffer_size=1024, center_frequency=None):
