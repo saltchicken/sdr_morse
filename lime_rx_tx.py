@@ -1,4 +1,4 @@
-from sdr_tools.classes import Lime_RX_TX, SYN_FM_Packet
+from sdr_tools.classes import Lime_RX_TX, TCP_Protocol
 
 from IPython import embed
 
@@ -13,5 +13,6 @@ tx_channel = 40000
 tx_freq = 434e6 # center_freq
 
 with Lime_RX_TX(sample_rate, rx_freq, tx_freq, antenna, 'BAND2', rx_channel, tx_channel, full_duplex=True) as transceiver:
-    fm_packet = SYN_FM_Packet(channel_freq=40000)
+    protocol = TCP_Protocol(channel_freq=40000)
+    fm_packet = protocol.syn
     embed()
