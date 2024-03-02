@@ -701,7 +701,7 @@ class TransmitterDispatcher(Dispatcher):
             return None
         if message.type == 'command' and np.array_equal(message.id, np.array([1, 1, 0, 0])): # TODO: Improve designation of id
             logger.info('SYN Packet Received')
-            self.transmitter.send(ACK_SYN_FM_Packet(self.transmitter.tx_channel_freq))
+            self.transmitter.send(SYN_ACK_FM_Packet(self.transmitter.tx_channel_freq))
             return True
         
 
