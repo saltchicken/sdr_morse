@@ -522,18 +522,19 @@ class UHD_RX(Receiver):
         plt.show()
             
     def read(self):
-        stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.start_cont)
-        stream_cmd.stream_now = True
-        self.rx_streamer.issue_stream_cmd(stream_cmd)
+        # stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.start_cont)
+        # stream_cmd.stream_now = True
+        # self.rx_streamer.issue_stream_cmd(stream_cmd)
         
         # TODO: Possibly implement this for efficiency if larger buffer needed.
         # for i in range(num_samps//1000):
         #     self.rx_streamer.recv(recv_buffer, metadata)
         #     samples[i*1000:(i+1)*1000] = recv_buffer[0]
         
-        self.rx_streamer.recv(self.read_buffer, self.rx_metadata)
-        stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.stop_cont)
-        self.rx_streamer.issue_stream_cmd(stream_cmd)
+        # self.rx_streamer.recv(self.read_buffer, self.rx_metadata)
+        self.read_buffer = np.copy(self.usrp.recv_num_samps(2000, self.frequency, self.sample_rate, [0], 0))
+        # stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.stop_cont)
+        # self.rx_streamer.issue_stream_cmd(stream_cmd)
         return self.read_buffer
 
 class Lime_TX(Transmitter):
