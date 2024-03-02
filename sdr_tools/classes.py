@@ -9,13 +9,13 @@ from commpy.filters import rrcosfilter
 
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-plt.style.use('dark_background')
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import threading, queue
 from loguru import logger
 import sys
+plt.style.use('dark_background')
 
 logger.remove()
 logger.add(sys.stderr, level="DEBUG")
@@ -576,16 +576,13 @@ class TX_Node(threading.Thread):
         # TODO: Needs a Dispatcher
         
     def run(self):
-        # tx_data = FM_Packet('10101010')
         self.kill_tx = threading.Event()
         logger.debug('Starting tx_node')
         while not self.kill_tx.is_set():
-            # self.transmitter.send(tx_data)
-            # time.sleep(1)
             RX_to_TX_data = self.RX_to_TX.get()
-            if RX_to_TX_data is None:
-                time.sleep(0.1)
-                continue
+            # if RX_to_TX_data is None:
+            #     time.sleep(0.1)
+            #     continue
             logger.debug(f"TX_Node received {RX_to_TX_data}")
             
         logger.debug('Killing tx_node')
