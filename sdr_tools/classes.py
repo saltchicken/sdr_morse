@@ -694,7 +694,7 @@ class TransmitterDispatcher(Dispatcher):
                 self.transmitter.send(self.protocol.syn_ack)
                 return True
             case NodeMessage('command', 'send ack'):
-                logger.info('TX Node sending ACK Packet')
+                logger.debug('TX_Node sending ACK Packet')
                 self.transmitter.send(self.protocol.ack)
         
 @dataclass
