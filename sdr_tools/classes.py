@@ -154,7 +154,7 @@ class SYN_ACK_FM_Packet(FM_Packet):
     def __init__(self, channel_freq):
         # super().__init__(message, channel_freq)
         self.preamble = np.array([1,0,1,0,0,0,1,1]).astype(int)
-        self.id = np.array([1, 1, 0, 0]).astype(int)
+        self.id = np.array([1, 1, 0, 1]).astype(int)
         # TODO: This should not be repeated in FM_Packet nor should it be used. Need setting changed from exterior
         sample_rate = 2e6
         freq = channel_freq
@@ -699,7 +699,7 @@ class TransmitterDispatcher(Dispatcher):
         logger.debug(f"TX_Node received {message}")
         if message == None:
             return None
-        if message.type == 'command' and np.array_equal(message.id, np.array([1, 1, 0, 1])): # TODO: Improve designation of id
+        if message.type == 'command' and np.array_equal(message.id, np.array([1, 1, 0, 0])): # TODO: Improve designation of id
             logger.info('SYN Packet Received')
             self.transmitter.send(SYN_FM_Packet(self.transmitter.tx_channel_freq))
             return True
