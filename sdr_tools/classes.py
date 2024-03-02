@@ -129,10 +129,13 @@ class FM_Packet(Packet):
         return transmission_segment
 
 class TCP_Protocol():
+    preamble = np.array([1,0,1,0,0,0,1,1]).astype(int)
+    syn_id = np.array([1,1,0,0]).astype(int)
+    syn_ack_id = np.array([1,1,0,1]).astype(int)
     def __init__(self, channel_freq):
         self.channel_freq = channel_freq
-        self.syn = TCP_Packet(self.channel_freq, np.array([1,0,1,0,0,0,1,1]).astype(int), np.array([1,1,0,0]).astype(int))
-        self.syn_ack = TCP_Packet(self.channel_freq, np.array([1,0,1,0,0,0,1,1]).astype(int), np.array([1,1,0,1]).astype(int))
+        self.syn = TCP_Packet(self.channel_freq, TCP_Protocol.preamble, TCP_Protocol.syn_id)
+        self.syn_ack = TCP_Packet(self.channel_freq, TCP_Protocol.preamble, TCP_Protocol.syn_ack_id)
         
         self.syn_flag = False
         
@@ -649,8 +652,6 @@ class RX_Node(threading.Thread):
 
 class Dispatcher():
     def __init__(self, TX_to_RX, RX_to_TX):
-        # TODO: This is not needed. Especially preamble but maybe whole base class.
-        self.preamble = np.array([1,0,1,0,0,0,1,1]).astype(int)
         self.TX_to_RX = TX_to_RX
         self.RX_to_TX = RX_to_TX
 
@@ -660,7 +661,7 @@ class ReceiverDispatcher(Dispatcher):
         
     def action(self, message):
         logger.debug(f"Decoded signal: {message}")
-        if np.array_equal(message[:8],self.preamble):
+        if np.array_equal(message[:8],TCP_Protocol.preamble):
             logger.debug(f'Data received:  {message[8:]}')
             logger.debug(f"ID received: {message[8:12]}")
             self.RX_to_TX.put(NodeMessage('command', message[8:12]))
