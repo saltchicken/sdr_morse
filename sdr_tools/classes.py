@@ -402,6 +402,14 @@ class Lime_RX(Receiver):
         sr = self.sdr.readStream(self.rxStream, [self.read_buffer], len(self.read_buffer))
         return self.read_buffer
 
+    def clear_read_buffer(self, num_samps=int(4e6)):
+        logger.debug("Clearing read_buffer for Lime")
+        previous_buffer = len(self.read_buffer)
+        self.set_buffer_size(int(num_samps))
+        self.read()
+        self.set_buffer_size(previous_buffer)
+        
+        
 class UHD_RX(Receiver):
     def __init__(self, sample_rate, frequency, antenna, freq_correction=0, read_buffer_size=1024):
         super().__init__(sample_rate, frequency, antenna, freq_correction, read_buffer_size)
@@ -663,6 +671,7 @@ class Lime_RX_TX(Lime_RX, Lime_TX):
         self.rx_node = RX_Node(self, self.rx_channel_freq, TX_to_RX, RX_to_TX)
         self.tx_node = TX_Node(self, TX_to_RX, RX_to_TX)
         if self.full_duplex:
+            self.clear_read_buffer()
             self.rx_node.start()
             self.tx_node.start()
         return self
