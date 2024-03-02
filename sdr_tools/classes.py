@@ -408,8 +408,7 @@ class Lime_RX(Receiver):
         self.set_buffer_size(int(num_samps))
         self.read()
         self.set_buffer_size(previous_buffer)
-        
-        
+               
 class UHD_RX(Receiver):
     def __init__(self, sample_rate, frequency, antenna, freq_correction=0, read_buffer_size=1024):
         super().__init__(sample_rate, frequency, antenna, freq_correction, read_buffer_size)
@@ -643,8 +642,7 @@ class ReceiverDispatcher(Dispatcher):
             self.RX_to_TX.put('yes')
         else:
             logger.debug('Preamble missing')
-    
-        
+            
 class TransmitterDispatcher(Dispatcher):
     def __init__(self, TX_to_RX, RX_to_TX):
         super().__init__(TX_to_RX, RX_to_TX)
@@ -653,8 +651,7 @@ class TransmitterDispatcher(Dispatcher):
 class NodeMessage():
     type: str
     data: np.ndarray
-
-                  
+                 
 class Lime_RX_TX(Lime_RX, Lime_TX):
     def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna, rx_channel_freq, full_duplex=False):
         self.full_duplex = full_duplex
@@ -671,7 +668,7 @@ class Lime_RX_TX(Lime_RX, Lime_TX):
         self.rx_node = RX_Node(self, self.rx_channel_freq, TX_to_RX, RX_to_TX)
         self.tx_node = TX_Node(self, TX_to_RX, RX_to_TX)
         if self.full_duplex:
-            self.clear_read_buffer()
+            self.clear_read_buffer() # Specific to Lime devices it seems. More testing needed to be done with this.
             self.rx_node.start()
             self.tx_node.start()
         return self
