@@ -682,12 +682,13 @@ class TransmitterDispatcher(Dispatcher):
     
     def action(self, message):
         logger.debug(f"TX_Node received {message}")
-        if message == None:
-            return None
-        if message.type == 'command' and message.id == 'send syn_ack':
-            logger.info('TX_Node sending SYN ACK Packet')
-            self.transmitter.send(self.protocol.syn_ack)
-            return True
+        match message:
+            case None:
+                return None
+            case NodeMessage('command', 'send syn_ack'):
+                logger.info('TX_Node sending SYN ACK Packet')
+                self.transmitter.send(self.protocol.syn_ack)
+                return True
         
 @dataclass
 class NodeMessage():
