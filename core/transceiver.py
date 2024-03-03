@@ -15,7 +15,7 @@ import threading, queue
 
 from commpy.filters import rrcosfilter
 
-from core.classes import Packet, Segment, ShiftFrequency, Decoded, TCP_Protocol
+from core.segments import Packet, Segment, ShiftFrequency, Decoded, TCP_Protocol
 
 @dataclass
 class NodeMessage():

@@ -1,4 +1,4 @@
-from core.classes import *
+from core.segments import *
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
