@@ -4,6 +4,7 @@ from core.display import Displayer
 import sys
 import argparse
 from IPython import embed
+from core.logging import logger
 
 def main():
     parser = argparse.ArgumentParser(description="A simple script to demonstrate argument parsing.")
