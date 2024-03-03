@@ -1,4 +1,5 @@
-from sdr_tools.classes import Lime_RX_TX, UHD_RX_TX, TCP_Protocol, logger
+from core.classes import Lime_RX_TX, UHD_RX_TX, TCP_Protocol, logger
+from core.display import Displayer
 
 import sys
 import argparse
