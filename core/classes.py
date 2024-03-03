@@ -7,7 +7,7 @@ from scipy.signal import butter, lfilter, resample_poly
 import matplotlib.pyplot as plt
 
 from dataclasses import dataclass
-from logging import logger
+from rxtx_logging import logger
 plt.style.use('dark_background')
 
 class ShiftFrequency():

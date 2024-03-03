@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import numpy as np
 
-from logging import logger
+from rxtx_logging import logger
 import time
 
 
