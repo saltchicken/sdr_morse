@@ -1,4 +1,6 @@
 from core.classes import *
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 
 class Displayer():
     def __init__(self):
