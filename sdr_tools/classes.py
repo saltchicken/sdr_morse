@@ -82,7 +82,12 @@ class FM_Settings:
     sample_rate: int = int(2e6)
     freq_deviation: int = 10000
     symbol_length: int = 10000   
-    
+ 
+@dataclass
+class NodeMessage():
+    type: str
+    id: str
+     
 class FM_Packet(Packet):
     def __init__(self, binary_string, channel_freq):
         settings = FM_Settings()
@@ -699,11 +704,7 @@ class TransmitterDispatcher(Dispatcher):
                 logger.debug('TX_Node sending ACK Packet')
                 self.transmitter.send(self.protocol.syn)
         
-@dataclass
-class NodeMessage():
-    type: str
-    id: str
-                 
+               
 class Lime_RX_TX(Lime_RX, Lime_TX):
     def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna, rx_channel_freq, tx_channel_freq, full_duplex=False):
         self.full_duplex = full_duplex
