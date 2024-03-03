@@ -34,8 +34,6 @@ def main():
             tx_antenna = ''
 
             with UHD_RX_TX(sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna, rx_channel, tx_channel, full_duplex=True) as transceiver:
-                protocol = TCP_Protocol(channel_freq=25000)
-                fm_packet = protocol.syn
                 embed(quiet=True)
         case 'lime':
             sample_rate = args.sr
@@ -47,8 +45,6 @@ def main():
             antenna = 'LNAW'
 
             with Lime_RX_TX(sample_rate, rx_freq, tx_freq, antenna, 'BAND2', rx_channel, tx_channel, full_duplex=True) as transceiver:
-                protocol = TCP_Protocol(channel_freq=40000)
-                fm_packet = protocol.syn
                 embed(quiet=True)
             pass
 
