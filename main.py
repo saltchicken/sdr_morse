@@ -1,5 +1,5 @@
 from core.transceiver import Lime_RX_TX, UHD_RX_TX
-from core.classes import TCP_Protocol
+from core.classes import TCP_Protocol, NodeMessage
 from core.display import Displayer
 
 import sys
