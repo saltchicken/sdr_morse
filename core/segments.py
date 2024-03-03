@@ -2,6 +2,7 @@ import numpy as np
 from scipy.signal import butter, lfilter, resample_poly
 from dataclasses import dataclass
 
+from core.utils import FM_Settings
 from core.logging import logger
 
 
@@ -34,13 +35,7 @@ class Segment:
 
 class Packet(Segment): 
     def __init__(self, segment: Segment):
-        super().__init__(segment.data, segment.sample_rate)
-
-@dataclass
-class FM_Settings:
-    sample_rate: int = int(2e6)
-    freq_deviation: int = 10000
-    symbol_length: int = 10000   
+        super().__init__(segment.data, segment.sample_rate)  
     
 class FM_Packet(Packet):
     def __init__(self, binary_string, channel_freq):

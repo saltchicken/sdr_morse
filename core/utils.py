@@ -4,6 +4,19 @@ from scipy import signal
 import matplotlib.pyplot as plt
 plt.style.use('dark_background')
 
+from dataclasses import dataclass
+
+@dataclass
+class NodeMessage():
+    type: str
+    id: str
+    
+@dataclass
+class FM_Settings:
+    sample_rate: int = int(2e6)
+    freq_deviation: int = 10000
+    symbol_length: int = 10000 
+
 def plot(data):
     plt.plot(data)
     plt.show()

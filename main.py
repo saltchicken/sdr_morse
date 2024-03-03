@@ -1,4 +1,5 @@
-from core.transceiver import Lime_RX_TX, UHD_RX_TX, NodeMessage
+from core.transceiver import Lime_RX_TX, UHD_RX_TX
+from core.utils import NodeMessage
 from core.display import Displayer
 
 import sys

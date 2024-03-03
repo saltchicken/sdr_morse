@@ -1,22 +1,18 @@
 import numpy as np
 import time
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 import threading, queue
 
 import uhd
 import SoapySDR
 from commpy.filters import rrcosfilter
 
-from core.segments import Packet, Segment, ShiftFrequency, Decoded, TCP_Protocol
+from core.segments import Packet, Segment, ShiftFrequency, Decoded
+from core.dispatcher import TransmitterDispatcher, ReceiverDispatcher
 from core.logging import logger
 
 
-@dataclass
-class NodeMessage():
-    type: str
-    id: str
-    
+ 
 class Transmitter(ABC):
     def __init__(self, sample_rate, center_freq, tx_antenna, tx_gain=20):
         self.sample_rate = sample_rate
@@ -311,57 +307,7 @@ class RX_Node(threading.Thread):
         self.kill_rx.set()
         self.join()
         logger.debug('RX thread successfully exited')
-
-class Dispatcher():
-    def __init__(self, TX_to_RX, RX_to_TX):
-        self.TX_to_RX = TX_to_RX
-        self.RX_to_TX = RX_to_TX
-
-class ReceiverDispatcher(Dispatcher):
-    def __init__(self, TX_to_RX, RX_to_TX):
-        super().__init__(TX_to_RX, RX_to_TX)
-        
-    def action(self, message):
-        logger.debug(f"Decoded signal: {message}")
-        received_preamble = message[:8]
-        received_id = message[8:12]
-        if np.array_equal(received_preamble, TCP_Protocol.preamble):
-            # logger.debug(f'Data received:  {message[8:]}')
-            logger.debug(f"ID received: {received_id}")
-            if np.array_equal(received_id, TCP_Protocol.syn_id):
-                logger.info("Received SYN Packet")
-                self.RX_to_TX.put(NodeMessage('command', 'send syn_ack'))
-            elif np.array_equal(received_id, TCP_Protocol.syn_ack_id):
-                logger.info("Received SYN_ACK Packet")
-                self.RX_to_TX.put(NodeMessage('command', 'send ack'))
-            elif np.array_equal(received_id, TCP_Protocol.ack_id):
-                logger.info("Received ACK Packet")
-            else:
-                logger.debug('Unrecognized ID found')
-        else:
-            logger.warning('Preamble missing')
-            
-class TransmitterDispatcher(Dispatcher):
-    def __init__(self, transmitter, TX_to_RX, RX_to_TX):
-        super().__init__(TX_to_RX, RX_to_TX)
-        self.transmitter = transmitter
-        self.protocol = TCP_Protocol(channel_freq=self.transmitter.tx_channel_freq)
-    
-    def action(self, message: NodeMessage):
-        logger.debug(f"TX_Node received {message}")
-        match message:
-            case None:
-                return None
-            case NodeMessage('command', 'send syn_ack'): # TODO: Freeze this class in initialiation to prevent constantly making the object to check
-                logger.debug('TX_Node sending SYN ACK Packet')
-                self.transmitter.send(self.protocol.syn_ack)
-            case NodeMessage('command', 'send ack'):
-                logger.debug('TX_Node sending ACK Packet')
-                self.transmitter.send(self.protocol.ack)
-            case NodeMessage('command', 'send syn'):
-                logger.debug('TX_Node sending ACK Packet')
-                self.transmitter.send(self.protocol.syn)
-                 
+                
 class Lime_RX_TX(Lime_RX, Lime_TX):
     def __init__(self, sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna, rx_channel_freq, tx_channel_freq, full_duplex=False):
         self.full_duplex = full_duplex
