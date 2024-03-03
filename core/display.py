@@ -1,4 +1,4 @@
-from classes import *
+import classes
 
 class Displayer():
     def __init__(self):
