@@ -1,4 +1,4 @@
-import classes
+from core.classes import *
 
 class Displayer():
     def __init__(self):
