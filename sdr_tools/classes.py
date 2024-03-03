@@ -696,6 +696,9 @@ class TransmitterDispatcher(Dispatcher):
             case NodeMessage('command', 'send ack'):
                 logger.debug('TX_Node sending ACK Packet')
                 self.transmitter.send(self.protocol.ack)
+            case NodeMessage('command', 'send syn'):
+                logger.debug('TX_Node sending ACK Packet')
+                self.transmitter.send(self.protocol.syn)
         
 @dataclass
 class NodeMessage():
@@ -714,10 +717,10 @@ class Lime_RX_TX(Lime_RX, Lime_TX):
     def __enter__(self):
         Lime_RX.__enter__(self)
         Lime_TX.__enter__(self)
-        TX_to_RX = queue.Queue()
-        RX_to_TX = queue.Queue()
-        self.rx_node = RX_Node(self, self.rx_channel_freq, TX_to_RX, RX_to_TX)
-        self.tx_node = TX_Node(self, TX_to_RX, RX_to_TX)
+        self.TX_to_RX = queue.Queue()
+        self.RX_to_TX = queue.Queue()
+        self.rx_node = RX_Node(self, self.rx_channel_freq, self.TX_to_RX, self.RX_to_TX)
+        self.tx_node = TX_Node(self, self.TX_to_RX, self.RX_to_TX)
         if self.full_duplex:
             self.clear_read_buffer() # Specific to Lime devices it seems. More testing needed to be done with this.
             self.rx_node.start()
@@ -725,6 +728,7 @@ class Lime_RX_TX(Lime_RX, Lime_TX):
         return self
         
     def __exit__(self, *args, **kwargs):
+        # TODO: Should queue.Queues be closed?
         if self.full_duplex:
             self.rx_node.stop()
             self.tx_node.stop()
@@ -742,11 +746,10 @@ class UHD_RX_TX(UHD_RX, UHD_TX):
     def __enter__(self):
         UHD_RX.__enter__(self)
         UHD_TX.__enter__(self)
-        
-        TX_to_RX = queue.Queue()
-        RX_to_TX = queue.Queue()
-        self.rx_node = RX_Node(self, self.rx_channel_freq, TX_to_RX, RX_to_TX)
-        self.tx_node = TX_Node(self, TX_to_RX, RX_to_TX)
+        self.TX_to_RX = queue.Queue()
+        self.RX_to_TX = queue.Queue()
+        self.rx_node = RX_Node(self, self.rx_channel_freq, self.TX_to_RX, self.RX_to_TX)
+        self.tx_node = TX_Node(self, self.TX_to_RX, self.RX_to_TX)
         if self.full_duplex:
             self.rx_node.start()
             self.tx_node.start()

@@ -7,7 +7,7 @@ from IPython import embed
 def main():
     parser = argparse.ArgumentParser(description="A simple script to demonstrate argument parsing.")
     parser.add_argument('--device', '-d', type=str, required=True, help="Device string (lime | uhd)")
-    parser.add_argument('--sr', type=float, required=True, help="Sample rate (Hz). Example: 2e6")
+    parser.add_argument('--sample_rate', type=float, required=True, help="Sample rate (Hz). Example: 2e6")
     parser.add_argument('--rx_center', type=float, required=True, help="Center frequency for receiver (Hz). Example: 434e6")
     parser.add_argument('--rx_channel', type=float, required=True, help="Channel frequency for recevier. Offset from center (Hz). Example: 40000")
     parser.add_argument('--tx_center', type=float, required=True, help="Center frequency for transmitter (Hz). Example: 434e6")
@@ -24,7 +24,7 @@ def main():
     # TODO: Refactor these match cases to not repeat all of the setup infomation. Possibly create config file
     match args.device:
         case 'uhd':
-            sample_rate = args.sr
+            sample_rate = args.sample_rate
             rx_freq = args.rx_center
             tx_freq = args.tx_center
             rx_channel = args.rx_channel
@@ -36,7 +36,7 @@ def main():
             with UHD_RX_TX(sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna, rx_channel, tx_channel, full_duplex=True) as transceiver:
                 embed(quiet=True)
         case 'lime':
-            sample_rate = args.sr
+            sample_rate = args.sample_rate
             rx_freq = args.rx_center
             tx_freq = tx_freq = args.tx_center
             rx_channel = args.rx_channel
