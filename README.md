@@ -1,5 +1,10 @@
 # Still in development
 
+<center style="font-size:24px;">DISCLAIMER</center>
+<center style="font-size:18px;">If you do not understand what this does, do not use it.</center>
+<center style="font-size:16px;font-weight:bold;">A closed environment is required. This will transmit.</center>
+<center style="font-size:16px;font-weight:bold;">This does not comply with FCC standards.</center>
+
 ## Example Usage
 
 ### Terminal A
