@@ -1,9 +1,9 @@
 # Still in development
 
-<p align="center">DISCLAIMER</p>
-<p>If you do not understand what this does, do not use it.</p>
-<p>A closed environment is required. This will transmit.</p>
-<p>This does not comply with FCC standards.</p>
+<p style="font-size:24px;" align="center">DISCLAIMER</p>
+<p style="font-size:18px;">If you do not understand what this does, do not use it.</p>
+<p style="font-size:16px;">A closed environment is required. This will transmit.</p>
+<p style="font-size:16px;font-weight:bold;">This does not comply with FCC standards.</p>
 
 ## Example Usage
 
