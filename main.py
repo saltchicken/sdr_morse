@@ -12,9 +12,6 @@ def main():
     parser.add_argument('--rx_channel', type=float, required=True, help="Channel frequency for recevier. Offset from center (Hz). Example: 40000")
     parser.add_argument('--tx_center', type=float, required=True, help="Center frequency for transmitter (Hz). Example: 434e6")
     parser.add_argument('--tx_channel', type=float, required=True, help="Channel frequency for transmitter. Offset from center (Hz). Example: 25000")
-    parser.add_argument('--sr', '-s', type=float, default=2e6, help="Sample rate in Hertz (Hz)")
-    parser.add_argument('--sr', '-s', type=float, default=2e6, help="Sample rate in Hertz (Hz)")
-    parser.add_argument('--sr', '-s', type=float, default=2e6, help="Sample rate in Hertz (Hz)")
     parser.add_argument('--verbose', '-v', action='store_true', help="Enable verbose mode")
 
     args = parser.parse_args()
