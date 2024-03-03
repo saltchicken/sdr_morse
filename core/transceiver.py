@@ -1,21 +1,16 @@
+import numpy as np
+import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-import numpy as np
-
-from core.logging import logger
-import time
-
-
-import uhd
-# TODO: condense these imports
-import SoapySDR
-from SoapySDR import *
-
 import threading, queue
 
+import uhd
+import SoapySDR
 from commpy.filters import rrcosfilter
 
 from core.segments import Packet, Segment, ShiftFrequency, Decoded, TCP_Protocol
+from core.logging import logger
+
 
 @dataclass
 class NodeMessage():
@@ -133,11 +128,11 @@ class Lime_RX(Receiver):
         logger.debug('Entering Receiver')
         args = dict(driver="lime")
         self.sdr = SoapySDR.Device(args)
-        self.sdr.setSampleRate(SOAPY_SDR_RX, 0, self.sample_rate)
-        self.sdr.setFrequency(SOAPY_SDR_RX, 0, self.frequency)
+        self.sdr.setSampleRate(SoapySDR.SOAPY_SDR_RX, 0, self.sample_rate)
+        self.sdr.setFrequency(SoapySDR.SOAPY_SDR_RX, 0, self.frequency)
         self.sdr.setAntenna(SoapySDR.SOAPY_SDR_RX, 0, self.antenna)
         self.sdr.setFrequencyCorrection(SoapySDR.SOAPY_SDR_RX, 0, self.freq_correction)
-        self.rxStream = self.sdr.setupStream(SOAPY_SDR_RX, SOAPY_SDR_CF32)
+        self.rxStream = self.sdr.setupStream(SoapySDR.SOAPY_SDR_RX, SoapySDR.SOAPY_SDR_CF32)
         self.sdr.activateStream(self.rxStream)  # start streaming
         return self
         
@@ -215,11 +210,11 @@ class Lime_TX(Transmitter):
     def __enter__(self):
         args = dict(driver="lime")
         self.sdr = SoapySDR.Device(args)
-        self.sdr.setSampleRate(SOAPY_SDR_TX, 0, self.sample_rate)
-        self.sdr.setFrequency(SOAPY_SDR_TX, 0, self.center_freq)
-        self.sdr.setAntenna(SOAPY_SDR_TX, 0, self.tx_antenna)
-        self.sdr.setGain(SOAPY_SDR_TX, 0, self.tx_gain)
-        self.txStream = self.sdr.setupStream(SOAPY_SDR_TX, SOAPY_SDR_CF32)
+        self.sdr.setSampleRate(SoapySDR.SOAPY_SDR_TX, 0, self.sample_rate)
+        self.sdr.setFrequency(SoapySDR.SOAPY_SDR_TX, 0, self.center_freq)
+        self.sdr.setAntenna(SoapySDR.SOAPY_SDR_TX, 0, self.tx_antenna)
+        self.sdr.setGain(SoapySDR.SOAPY_SDR_TX, 0, self.tx_gain)
+        self.txStream = self.sdr.setupStream(SoapySDR.SOAPY_SDR_TX, SoapySDR.SOAPY_SDR_CF32)
         self.sdr.activateStream(self.txStream)
         return self
         
@@ -235,7 +230,7 @@ class Lime_TX(Transmitter):
         
     def set_gain(self, gain):
         self.gain = gain
-        self.sdr.setGain(SOAPY_SDR_TX, 0, self.gain)     
+        self.sdr.setGain(SoapySDR.SOAPY_SDR_TX, 0, self.gain)     
                  
 class UHD_TX(Transmitter):
     def __init__(self, sample_rate, center_freq, antenna, gain=0):

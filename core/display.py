@@ -1,7 +1,10 @@
-from core.segments import ShiftFrequency, Filter
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-import numpy as np
+plt.style.use('dark_background')
+
+from core.segments import ShiftFrequency, Filter
+
 
 class Displayer():
     def __init__(self):
@@ -172,3 +175,20 @@ class Displayer():
             ani = FuncAnimation(fig, update, interval=interval)
             
             plt.show()
+        
+        @staticmethod    
+        def plot_decoded(self):
+            plt.figure(figsize=(10, 8))
+            
+            plt.subplot(2, 2, 1)
+            self.display(subplot=True)
+            
+            plt.subplot(2, 2, 2)
+            self.lowpass.display(subplot=True)
+            
+            plt.subplot(2, 2, 3)
+            plt.plot(self.demod.data)
+            
+            plt.subplot(2, 2, 4)
+            plt.plot(self.resample.data)
+            plt.show()  

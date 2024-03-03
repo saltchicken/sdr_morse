@@ -1,14 +1,9 @@
 import numpy as np
-from SoapySDR import *
-
 from scipy.signal import butter, lfilter, resample_poly
-
-# TODO: Move calls to plt over to display.py
-import matplotlib.pyplot as plt
-
 from dataclasses import dataclass
+
 from core.logging import logger
-plt.style.use('dark_background')
+
 
 class ShiftFrequency():
     def __init__(self, sample_rate, frequency, num_samps):
@@ -167,21 +162,5 @@ class Decoded(Segment):
         self.demod.data = self.demod.data[symbol_length//2:] # Offset the sample. Poverty synchronization
         self.resample = Resample(self.demod, 1, symbol_length)
         self.decoded = self.decode_segment(self.resample)
-        # logger.debug(self.decoded)
-        
-    def plot_decoded(self):
-        plt.figure(figsize=(10, 8))
-        
-        plt.subplot(2, 2, 1)
-        self.display(subplot=True)
-        
-        plt.subplot(2, 2, 2)
-        self.lowpass.display(subplot=True)
-        
-        plt.subplot(2, 2, 3)
-        plt.plot(self.demod.data)
-        
-        plt.subplot(2, 2, 4)
-        plt.plot(self.resample.data)
-        plt.show()    
+        # logger.debug(self.decoded)  
                 
