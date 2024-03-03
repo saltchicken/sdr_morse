@@ -1,9 +1,9 @@
 # Still in development
 
-<center>DISCLAIMER</center>
-<center>If you do not understand what this does, do not use it.</center>
-<center>A closed environment is required. This will transmit.</center>
-<center>This does not comply with FCC standards.</center>
+<span align="center">DISCLAIMER</span>
+<span>If you do not understand what this does, do not use it.</span>
+<span>A closed environment is required. This will transmit.</span>
+<span>This does not comply with FCC standards.</span>
 
 ## Example Usage
 
