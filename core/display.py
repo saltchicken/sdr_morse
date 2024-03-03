@@ -1,6 +1,7 @@
-from core.segments import *
+from core.segments import ShiftFrequency, Filter
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+import numpy as np
 
 class Displayer():
     def __init__(self):
