@@ -15,7 +15,6 @@ def main():
     parser.add_argument('--tx_center', type=float, required=True, help="Center frequency for transmitter (Hz). Example: 434e6")
     parser.add_argument('--tx_channel', type=float, required=True, help="Channel frequency for transmitter. Offset from center (Hz). Example: 25000")
     parser.add_argument('--verbose', '-v', action='store_true', help="Enable verbose mode")
-
     args = parser.parse_args()
 
     logger.remove()
@@ -23,32 +22,37 @@ def main():
         logger.add(sys.stderr, level="DEBUG")
     else:
         logger.add(sys.stderr, level="INFO")
+    
     # TODO: Refactor these match cases to not repeat all of the setup infomation. Possibly create config file
     match args.device:
-        case 'uhd':
-            sample_rate = args.sample_rate
-            rx_freq = args.rx_center
-            tx_freq = args.tx_center
-            rx_channel = args.rx_channel
-            tx_channel = args.tx_channel
-            
+        case 'uhd':           
             rx_antenna = ''
             tx_antenna = ''
 
-            with UHD_RX_TX(sample_rate, rx_freq, tx_freq, rx_antenna, tx_antenna, rx_channel, tx_channel, full_duplex=True) as transceiver:
+            with UHD_RX_TX(args.sample_rate, 
+                           args.rx_center, 
+                           args.tx_center, 
+                           rx_antenna, 
+                           tx_antenna, 
+                           args.rx_channel, 
+                           args.tx_channel, 
+                           full_duplex=True) as transceiver:
                 embed(quiet=True)
+        
         case 'lime':
-            sample_rate = args.sample_rate
-            rx_freq = args.rx_center
-            tx_freq = tx_freq = args.tx_center
-            rx_channel = args.rx_channel
-            tx_channel = args.tx_channel
-            
-            antenna = 'LNAW'
+            rx_antenna = 'LNAW'
+            tx_antenna = 'BAND2'
 
-            with Lime_RX_TX(sample_rate, rx_freq, tx_freq, antenna, 'BAND2', rx_channel, tx_channel, full_duplex=True) as transceiver:
+            with Lime_RX_TX(args.sample_rate, 
+                            args.rx_center, 
+                            args.tx_center, 
+                            rx_antenna, 
+                            tx_antenna, 
+                            args.rx_channel, 
+                            args.tx_channel, 
+                            full_duplex=True) as transceiver:
                 embed(quiet=True)
-            pass
+
 
 if __name__ == "__main__":
     main()
