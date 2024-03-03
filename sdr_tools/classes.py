@@ -684,7 +684,7 @@ class TransmitterDispatcher(Dispatcher):
         self.transmitter = transmitter
         self.protocol = TCP_Protocol(channel_freq=self.transmitter.tx_channel_freq)
     
-    def action(self, message):
+    def action(self, message: NodeMessage):
         logger.debug(f"TX_Node received {message}")
         match message:
             case None:
@@ -692,7 +692,6 @@ class TransmitterDispatcher(Dispatcher):
             case NodeMessage('command', 'send syn_ack'): # TODO: Freeze this class in initialiation to prevent constantly making the object to check
                 logger.debug('TX_Node sending SYN ACK Packet')
                 self.transmitter.send(self.protocol.syn_ack)
-                return True
             case NodeMessage('command', 'send ack'):
                 logger.debug('TX_Node sending ACK Packet')
                 self.transmitter.send(self.protocol.ack)
