@@ -168,7 +168,7 @@ class UHD_RX(Receiver):
         stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.start_cont)
         # stream_cmd.stream_now = True
         INIT_DELAY = 0.05
-        stream_cmd.time_spec = uhd.types.time_spec(self.usrp.get_time_now().get_real_secs() + INIT_DELAY)
+        stream_cmd.time_spec = uhd.types.TimeSpec(self.usrp.get_time_now().get_real_secs() + INIT_DELAY)
         # self.tx_metadata.has_time_spec = bool(self.tx_streamer.get_num_channels())
         self.rx_streamer.issue_stream_cmd(stream_cmd)
         
