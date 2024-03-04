@@ -103,12 +103,6 @@ class Receiver(ABC):
             return captured_signal
         
     def capture_signal_decode(self, kill_rx, channel_freq, symbol_length=10000):
-        # try:
-            # received = func_timeout(5, self.capture_signal)
-            # received = received[0]
-        # except FunctionTimedOut:
-        #     logger.debug("Capture Signal timedout")
-        #     return None
         received = self.capture_signal(kill_rx=kill_rx, channel_freq=channel_freq)
         if received:
             decoded = Decoded(received, symbol_length)
