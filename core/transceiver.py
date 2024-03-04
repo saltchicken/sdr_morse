@@ -165,15 +165,18 @@ class UHD_RX(Receiver):
         # recv_buffer = np.zeros((1, self.read_buffer_size), dtype=np.complex64)
 
         # Start Stream
-        stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.start_cont)
-        stream_cmd.stream_now = True
+        stream_cmd = uhd.types.stream_cmd(uhd.types.stream_mode.start_cont)
+        # stream_cmd.stream_now = True
+        INIT_DELAY = 0.05
+        stream_cmd.time_spec = uhd.types.time_spec(self.usrp.get_time_now().get_real_secs() + INIT_DELAY)
+        # self.tx_metadata.has_time_spec = bool(self.tx_streamer.get_num_channels())
         self.rx_streamer.issue_stream_cmd(stream_cmd)
         
         return self
     
     def __exit__(self, *args, **kwargs):
         logger.debug("Exiting Receiver")
-        stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.stop_cont)
+        stream_cmd = uhd.types.stream_cmd(uhd.types.stream_mode.stop_cont)
         self.rx_streamer.issue_stream_cmd(stream_cmd)
           
     def read(self):
