@@ -190,6 +190,8 @@ class UHD_RX(Receiver):
         #     samples[i*1000:(i+1)*1000] = recv_buffer[0]
         
         self.rx_streamer.recv(self.read_buffer, self.rx_metadata)
+        if not self.rx_metadata.error_code == uhd.types.RXMetadataErrorCode.none:
+            logger.warning(self.rx_metadata.error_code)
         # self.read_buffer = np.copy(self.usrp.recv_num_samps(2000, self.frequency, self.sample_rate, [0], 0))
         # stream_cmd = uhd.types.StreamCMD(uhd.types.StreamMode.stop_cont)
         # self.rx_streamer.issue_stream_cmd(stream_cmd)
