@@ -250,6 +250,8 @@ class UHD_TX(Transmitter):
     
     def send(self, packet: Packet):
         self.tx_streamer.send(packet.data, self.tx_metadata)
+        if not self.tx_metadata.error_code == uhd.types.TXMetadataErrorCode.none:
+            logger.warning(self.tx_metadata.error_code)
         
     def set_gain(self, gain):
         self.gain = gain
