@@ -102,10 +102,10 @@ class Receiver(ABC):
             logger.debug(f"Returning captured signal. Signal contains {len(captured_signal.data)} samples")
             return captured_signal
         
-    def capture_signal_decode(self, kill_rx, channel_freq, symbol_length=10000):
+    def capture_signal_decode(self, kill_rx, channel_freq):
         received = self.capture_signal(kill_rx=kill_rx, channel_freq=channel_freq)
         if received:
-            decoded = Decoded(received, symbol_length)
+            decoded = Decoded(received)
             return decoded
         else:
             return None

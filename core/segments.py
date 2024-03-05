@@ -144,9 +144,10 @@ class Resample(Segment):
         # return sample[::downsample_rate] Alternative
         
 class Decoded(Segment):
-    def __init__(self, segment: Segment, symbol_length=10000):
+    def __init__(self, segment: Segment):
         super().__init__(segment.data, segment.sample_rate)
-        self.decode(symbol_length)
+        self.settings = FM_Settings()
+        self.decode(self.settings.symbol_length)
         
     def decode_segment(self, segment:Segment):
         return (np.real(segment.data) < 0).astype(int) # Why is real needed    
